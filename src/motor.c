@@ -38,13 +38,21 @@ const uint8_t MOTOR_CURRENT_TAB[256]= {
 		23,23,23,23,24,24,24,24,24,25,25,25,25,26,26,26,27,27,27,28,28,29,29,31
 };
 
+TIM_HandleTypeDef htimMotor;
 TIM_HandleTypeDef htimPump;
 TIM_HandleTypeDef htimEncM1;
 TIM_HandleTypeDef htimEncM2;
 TIM_HandleTypeDef htimEncSpeed;
 TIM_Encoder_InitTypeDef sConfigEncM;
 TIM_IC_InitTypeDef sConfigEncSpeed;
+TIM_OC_InitTypeDef sConfigTimMotor;
 TIM_OC_InitTypeDef sConfigTimPump;
+
+/* Timer handler declaration */
+TIM_HandleTypeDef    TimHandle;
+
+/* Timer Output Compare Configuration Structure declaration */
+TIM_OC_InitTypeDef sConfig;
 
 /* local functions ----------------------------------------------------------*/
 
@@ -58,16 +66,16 @@ void MOTOR_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	// Enable all timers
-	PUMP_TIMER_CLK_ENABLE();
+	PUMP_PWM_TIMER_CLK_ENABLE();
+	MOTOR_PWM_TIMER_CLK_ENABLE();
 	MOTOR_HALL_ENC1_TIMER_CLK_ENABLE();
 	MOTOR_HALL_ENC2_TIMER_CLK_ENABLE();
 	MOTOR_HALL_SPEED_TIMER_CLK_ENABLE();
 
 
-	// Enable the clock for all motor pins
+	// Enable the clock for all IO pins
 	MOTOR_PWM_CLK_ENABLE();
 	MOTOR_CURR_CLK_ENABLE();
-	// Enable the clock for all encoder pins
 	MOTOR_HALL_M1_ENC_CLK_ENABLE();
 	MOTOR_HALL_M2_ENC_CLK_ENABLE();
 	MOTOR_HALL_SPEED_CLK_ENABLE();
@@ -77,9 +85,10 @@ void MOTOR_Init(void) {
 	// Configure the 4 motor pins of motor 1 and 2 as normal IO
 	GPIO_InitStruct.Pin = MOTOR_M2_IN1_PIN | MOTOR_M2_IN2_PIN
 						| MOTOR_M1_IN1_PIN| MOTOR_M1_IN2_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStruct.Alternate = MOTOR_PWM_TIMER_AF;
 	HAL_GPIO_Init(MOTOR_PWM_PORT, &GPIO_InitStruct);
 
 	// Configure the 2 motor pins of motor 3 as PWM output
@@ -87,7 +96,7 @@ void MOTOR_Init(void) {
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = PUMP_GPIO_TIMER_AF;
+	GPIO_InitStruct.Alternate = PUMP_PWM_TIMER_AF;
 	HAL_GPIO_Init(MOTOR_PWM_PORT, &GPIO_InitStruct);
 
 	// Configure the 10 motor current pins
@@ -101,29 +110,56 @@ void MOTOR_Init(void) {
 	HAL_GPIO_Init(MOTOR_CURR_PORT, &GPIO_InitStruct);
 
     // Timer configuration for pump
-	htimPump.Instance = PUMP_TIMER;
-	htimPump.Init.Period = 20000 - 1; // = 50Hz = 20ms = 168MHz / 168 / 20000
-	htimPump.Init.Prescaler = 168-1;
+	htimMotor.Instance = MOTOR_PWM_TIMER;
+	htimMotor.Init.Period = 4200 - 1; // = 20kHz = 84MHz / 1 / 4200
+	htimMotor.Init.Prescaler = 1-1;
+	htimMotor.Init.ClockDivision = 1;
+	htimMotor.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_PWM_Init(&htimMotor);
+
+    // Timer configuration for pump
+	htimPump.Instance = PUMP_PWM_TIMER;
+	htimPump.Init.Period = 4200 - 1; // = 20kHz = 168MHz / 2 / 4200
+	htimPump.Init.Prescaler = 2-1;
 	htimPump.Init.ClockDivision = 1;
 	htimPump.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_PWM_Init(&htimPump);
 
+    // Configure Timer 1 channel 1 and 2 as PWM output
+    sConfigTimMotor.OCMode = TIM_OCMODE_PWM1;
+    sConfigTimMotor.Pulse = 0;
+    sConfigTimMotor.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigTimMotor.OCFastMode  = TIM_OCFAST_ENABLE;
+    sConfigTimMotor.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    sConfigTimMotor.OCIdleState = TIM_OCIDLESTATE_RESET;
+    sConfigTimMotor.OCNIdleState= TIM_OCNIDLESTATE_SET;
+
     // Configure Timer 1 channel 1 as PWM output
     sConfigTimPump.OCMode = TIM_OCMODE_PWM1;
-    sConfigTimPump.OCIdleState = TIM_OUTPUTSTATE_ENABLE;
     sConfigTimPump.Pulse = 0;
     sConfigTimPump.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigTimPump.OCFastMode  = TIM_OCFAST_ENABLE;
+    sConfigTimPump.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    sConfigTimPump.OCIdleState = TIM_OCIDLESTATE_RESET;
+    sConfigTimPump.OCNIdleState= TIM_OCNIDLESTATE_SET;
 
     // PWM Mode
+    HAL_TIM_PWM_ConfigChannel(&htimMotor, &sConfigTimMotor, TIM_CHANNEL_1);
+    HAL_TIM_PWM_ConfigChannel(&htimMotor, &sConfigTimMotor, TIM_CHANNEL_2);
+    HAL_TIM_PWM_ConfigChannel(&htimMotor, &sConfigTimMotor, TIM_CHANNEL_3);
+    HAL_TIM_PWM_ConfigChannel(&htimMotor, &sConfigTimMotor, TIM_CHANNEL_4);
     HAL_TIM_PWM_ConfigChannel(&htimPump, &sConfigTimPump, TIM_CHANNEL_1);
     HAL_TIM_PWM_ConfigChannel(&htimPump, &sConfigTimPump, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htimMotor, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htimMotor, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htimMotor, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htimMotor, TIM_CHANNEL_4);
     HAL_TIM_PWM_Start(&htimPump, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htimPump, TIM_CHANNEL_2);
 
-    MOTOR_SetVal(MOTOR_M1, 0);
-    MOTOR_SetVal(MOTOR_M2, 0);
-    MOTOR_SetVal(MOTOR_PUMP, 0);
-
+    MOTOR_SetVal(MOTOR_M1, -500, 128);
+    MOTOR_SetVal(MOTOR_M2, -500 , 128);
+    MOTOR_SetVal(MOTOR_PUMP, -500, 0);
 
     // Encoder ----------------------------------------------------------
 
@@ -208,6 +244,7 @@ void MOTOR_Init(void) {
 	HAL_TIM_IC_Start(&htimEncSpeed, TIM_CHANNEL_4);
 
 
+
 }
 
 /**
@@ -216,8 +253,10 @@ void MOTOR_Init(void) {
  * @param  value motor value from -255 to +255
  * @retval None
  */
-void MOTOR_SetVal(int motorNr, int value) {
-	uint8_t unsignedValue;
+void MOTOR_SetVal(int motorNr, int value, uint8_t current) {
+	uint32_t unsignedValue;
+	uint32_t channelLeft, channelRight;
+	TIM_HandleTypeDef htim;
 	int sign;
 
 	// get absolute value and sign
@@ -232,43 +271,34 @@ void MOTOR_SetVal(int motorNr, int value) {
 		sign = 0;
 	}
 
-	// Set the outputs
+	// Set current and the references
 	if (motorNr == MOTOR_M1) {
-		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M1_MASK)) |  (MOTOR_CURRENT_TAB[unsignedValue] << MOTOR_M1_SHIFT);
-		if (sign == 1) {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN1_PIN, SET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN2_PIN, RESET);
-		} else if (sign == -1) {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN1_PIN, RESET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN2_PIN, SET);
-		} else {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN1_PIN, RESET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN2_PIN, RESET);
-		}
+		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M1_MASK)) |  (MOTOR_CURRENT_TAB[current] << MOTOR_M1_SHIFT);
+		htim = htimMotor;
+		channelLeft  = TIM_CHANNEL_3;
+		channelRight = TIM_CHANNEL_4;
 	} else if (motorNr == MOTOR_M2) {
-		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M2_MASK)) |  (MOTOR_CURRENT_TAB[unsignedValue] << MOTOR_M2_SHIFT);
-		if (sign == 1) {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN1_PIN, SET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN2_PIN, RESET);
-		} else if (sign == -1) {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN1_PIN, RESET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN2_PIN, SET);
-		} else {
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN1_PIN, RESET);
-			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN2_PIN, RESET);
-		}
+		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M2_MASK)) |  (MOTOR_CURRENT_TAB[current] << MOTOR_M2_SHIFT);
+		htim = htimMotor;
+		channelLeft  = TIM_CHANNEL_1;
+		channelRight = TIM_CHANNEL_2;
 	} else if (motorNr == MOTOR_PUMP) {
-		if (sign == 1) {
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_1, unsignedValue);
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_2, 0);
-		} else if (sign == -1) {
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_1, 0);
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_2, unsignedValue);
-		} else {
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_1, 0);
-			__HAL_TIM_SetCompare(&htimPump, TIM_CHANNEL_2, 0);
-		}
-
+		htim = htimPump;
+		channelLeft  = TIM_CHANNEL_1;
+		channelRight = TIM_CHANNEL_2;
 	}
+
+	// Set the PWM
+	if (sign == 1) {
+		__HAL_TIM_SetCompare(&htim, channelLeft, unsignedValue);
+		__HAL_TIM_SetCompare(&htim, channelRight, 0);
+	} else if (sign == -1) {
+		__HAL_TIM_SetCompare(&htim, channelLeft, 0);
+		__HAL_TIM_SetCompare(&htim, channelRight, unsignedValue);
+	} else {
+		__HAL_TIM_SetCompare(&htim, channelLeft, 0);
+		__HAL_TIM_SetCompare(&htim, channelRight, 0);
+	}
+
 
 }

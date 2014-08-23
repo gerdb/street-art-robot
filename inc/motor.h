@@ -67,15 +67,18 @@
 #define MOTOR_M1_SHIFT					7
 #define MOTOR_M2_MASK					(0x1F << MOTOR_M2_SHIFT)
 #define MOTOR_M1_MASK					(0x1F << MOTOR_M1_SHIFT)
-#define PUMP_GPIO_TIMER_AF				GPIO_AF1_TIM1
+#define PUMP_PWM_TIMER_AF				GPIO_AF1_TIM1
+#define MOTOR_PWM_TIMER_AF				GPIO_AF2_TIM5
 #define MOTOR_HALL_ENC1_TIMER_AF		GPIO_AF2_TIM3
 #define MOTOR_HALL_ENC2_TIMER_AF		GPIO_AF2_TIM4
 #define MOTOR_HALL_SPEED_TIMER_AF		GPIO_AF3_TIM8
-#define PUMP_TIMER						TIM1
+#define PUMP_PWM_TIMER					TIM1
+#define MOTOR_PWM_TIMER					TIM5
 #define MOTOR_HALL_ENC1_TIMER			TIM3
 #define MOTOR_HALL_ENC2_TIMER			TIM4
 #define MOTOR_HALL_SPEED_TIMER			TIM8
-#define PUMP_TIMER_CLK_ENABLE()			__TIM1_CLK_ENABLE()
+#define PUMP_PWM_TIMER_CLK_ENABLE()					__TIM1_CLK_ENABLE()
+#define MOTOR_PWM_TIMER_CLK_ENABLE()				__TIM5_CLK_ENABLE()
 #define MOTOR_HALL_ENC1_TIMER_CLK_ENABLE()			__TIM3_CLK_ENABLE()
 #define MOTOR_HALL_ENC2_TIMER_CLK_ENABLE()			__TIM4_CLK_ENABLE()
 #define MOTOR_HALL_SPEED_TIMER_CLK_ENABLE()			__TIM8_CLK_ENABLE()
@@ -89,6 +92,6 @@
 
 /* Function Prototypes --------------------------------------------------------*/
 void MOTOR_Init(void);
-void MOTOR_SetVal(int motorNr, int value);
+void MOTOR_SetVal(int motorNr, int value, uint8_t current);
 
 #endif // __MOTOR_H
