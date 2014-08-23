@@ -74,9 +74,16 @@ void MOTOR_Init(void) {
 
 	// Motor driver --------------------------------------------------------
 
-	// Configure the 6 motor pins
-	GPIO_InitStruct.Pin = MOTOR_M2_IN1_PIN | MOTOR_M2_IN2_PIN | MOTOR_M1_IN1_PIN
-						| MOTOR_M1_IN2_PIN | MOTOR_M3_IN1_PIN | MOTOR_M3_IN2_PIN;
+	// Configure the 4 motor pins of motor 1 and 2 as normal IO
+	GPIO_InitStruct.Pin = MOTOR_M2_IN1_PIN | MOTOR_M2_IN2_PIN
+						| MOTOR_M1_IN1_PIN| MOTOR_M1_IN2_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	HAL_GPIO_Init(MOTOR_PWM_PORT, &GPIO_InitStruct);
+
+	// Configure the 2 motor pins of motor 3 as PWM output
+	GPIO_InitStruct.Pin = MOTOR_M3_IN1_PIN | MOTOR_M3_IN2_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
@@ -88,10 +95,9 @@ void MOTOR_Init(void) {
 						| MOTOR_M2_I3_PIN | MOTOR_M2_I4_PIN
 						| MOTOR_M1_I0_PIN | MOTOR_M1_I1_PIN | MOTOR_M1_I2_PIN
 						| MOTOR_M1_I3_PIN | MOTOR_M1_I4_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = PUMP_GPIO_TIMER_AF;
 	HAL_GPIO_Init(MOTOR_CURR_PORT, &GPIO_InitStruct);
 
     // Timer configuration for pump
@@ -240,7 +246,7 @@ void MOTOR_SetVal(int motorNr, int value) {
 			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M1_IN2_PIN, RESET);
 		}
 	} else if (motorNr == MOTOR_M2) {
-		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M2_MASK)) |  (MOTOR_CURRENT_TAB[unsignedValue] << MOTOR_M1_SHIFT);
+		MOTOR_CURR_PORT->ODR = (MOTOR_CURR_PORT->ODR & (~MOTOR_M2_MASK)) |  (MOTOR_CURRENT_TAB[unsignedValue] << MOTOR_M2_SHIFT);
 		if (sign == 1) {
 			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN1_PIN, SET);
 			HAL_GPIO_WritePin(MOTOR_PWM_PORT, MOTOR_M2_IN2_PIN, RESET);

@@ -58,6 +58,9 @@ int main(void) {
 	MOTOR_Init();
 	SWITCH_Init();
 
+
+	MOTOR_SetVal(MOTOR_PUMP, -64);
+
 	while(1);
 
 	// Initialize the power module
