@@ -157,9 +157,9 @@ void MOTOR_Init(void) {
     HAL_TIM_PWM_Start(&htimPump, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htimPump, TIM_CHANNEL_2);
 
-    MOTOR_SetVal(MOTOR_M1, -500, 128);
-    MOTOR_SetVal(MOTOR_M2, -500 , 128);
-    MOTOR_SetVal(MOTOR_PUMP, -500, 0);
+    MOTOR_SetVal(MOTOR_M1, 0, 0);
+    MOTOR_SetVal(MOTOR_M2, 0 , 0);
+    MOTOR_SetVal(MOTOR_PUMP, 0, 0);
 
     // Encoder ----------------------------------------------------------
 

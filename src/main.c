@@ -57,9 +57,7 @@ int main(void) {
 	SERVO_Init();
 	MOTOR_Init();
 	SWITCH_Init();
-
-	while(1);
-
+/*
 	// Initialize the power module
 	POWER_Init();
 
@@ -68,7 +66,7 @@ int main(void) {
 
 	// Initialize the debug port
 	USARTL2_Init();
-
+*/
 
 	// Main loop
 	 while (1) {
@@ -79,12 +77,25 @@ int main(void) {
 			blink = !blink;
 
 			//200ms Task
-			POWER_Task();
+			//POWER_Task();
 		}
 
 		SWITCH_Task();
+
+		if (SWITCH_GetClick(SWITCH_LEFT)) {
+			MOTOR_SetVal(MOTOR_M1, 800, 255);
+		}
+		if (SWITCH_GetClick(SWITCH_RIGHT)) {
+			MOTOR_SetVal(MOTOR_M1, 0, 255);
+		}
+		if (SWITCH_GetClick(SWITCH_UP)) {
+			MOTOR_SetVal(MOTOR_M1, -800, 255);
+		}
+		if (SWITCH_GetClick(SWITCH_DOWN)) {
+			MOTOR_SetVal(MOTOR_M1, 2100, 255);
+		}
 		// Debug ports
-		USARTL1_RxBufferTask();
+		//USARTL1_RxBufferTask();
 
 	}
 
