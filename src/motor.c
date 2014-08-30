@@ -165,14 +165,14 @@ void MOTOR_Init(void) {
 
 	// Configure the hall encoder pins
 	GPIO_InitStruct.Pin = MOTOR_HALL_M1A_ENC_PIN | MOTOR_HALL_M1B_ENC_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
 	GPIO_InitStruct.Alternate = MOTOR_HALL_ENC1_TIMER_AF;
 	HAL_GPIO_Init(MOTOR_HALL_M1_ENC_PORT, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = MOTOR_HALL_M2A_ENC_PIN | MOTOR_HALL_M2B_ENC_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
 	GPIO_InitStruct.Alternate = MOTOR_HALL_ENC2_TIMER_AF;
@@ -193,13 +193,13 @@ void MOTOR_Init(void) {
 	htimEncM1.Init.ClockDivision = 0;
 	htimEncM1.Init.CounterMode = TIM_COUNTERMODE_UP;
 
-	sConfigEncM.EncoderMode = TIM_ENCODERMODE_TI12;
+	sConfigEncM.EncoderMode = TIM_ENCODERMODE_TI2;
 	sConfigEncM.IC1Filter = 0;
-	sConfigEncM.IC1Polarity = TIM_ICPOLARITY_BOTHEDGE;
+	sConfigEncM.IC1Polarity = TIM_ICPOLARITY_RISING;
 	sConfigEncM.IC1Prescaler = TIM_ICPSC_DIV1;
 	sConfigEncM.IC1Selection = TIM_ICSELECTION_DIRECTTI;
 	sConfigEncM.IC2Filter = 0;
-	sConfigEncM.IC2Polarity = TIM_ICPOLARITY_BOTHEDGE;
+	sConfigEncM.IC2Polarity = TIM_ICPOLARITY_RISING;
 	sConfigEncM.IC2Prescaler = TIM_ICPSC_DIV1;
 	sConfigEncM.IC2Selection = TIM_ICSELECTION_DIRECTTI;
 
