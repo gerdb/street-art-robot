@@ -98,7 +98,7 @@ int main(void) {
 		// Debug ports
 		//USARTL1_RxBufferTask();
 		//i = TIM8->CCR1;
-		sprintf (txt,"%5u", (unsigned int)motorHallPeriode[0]);
+		sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();
 	}

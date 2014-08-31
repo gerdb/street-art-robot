@@ -36,7 +36,6 @@
 #define MOTOR_HALL_M1_ENC_CLK_ENABLE()	__GPIOA_CLK_ENABLE()
 #define MOTOR_HALL_M2_ENC_CLK_ENABLE()	__GPIOD_CLK_ENABLE()
 #define MOTOR_HALL_SPEED_CLK_ENABLE()	__GPIOC_CLK_ENABLE()
-#define MOTOR_HALL_SPEED_DMA_CLK_ENABLE()	__DMA2_CLK_ENABLE()
 // Pins
 #define MOTOR_M2_IN1_PIN				GPIO_PIN_0
 #define MOTOR_M2_IN2_PIN				GPIO_PIN_1
@@ -91,7 +90,6 @@
 #define MOTOR_HALL_ENC1_TIMER_CLK_ENABLE()			__TIM3_CLK_ENABLE()
 #define MOTOR_HALL_ENC2_TIMER_CLK_ENABLE()			__TIM4_CLK_ENABLE()
 #define MOTOR_HALL_SPEED_TIMER_CLK_ENABLE()			__TIM8_CLK_ENABLE()
-#define MOTOR_HALL_SPEED_DMA_Stream					DMA2_Stream0
 //IRQ
 #define TIM_HALL_SPEED_IRQn                      TIM8_CC_IRQn
 #define TIM_HALL_SPEED_IRQHandler                TIM8_CC_IRQHandler
@@ -102,7 +100,6 @@
 #define MOTOR_PUMP 	MOTOR_M3
 
 /* global variables --------------------------------------------------------*/
-extern uint32_t icapt_buf0[200];
 extern TIM_HandleTypeDef htimEncSpeed;
 extern uint16_t motorHallPeriode[4];
 /* Function Prototypes --------------------------------------------------------*/
