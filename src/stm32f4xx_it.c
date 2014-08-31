@@ -63,7 +63,7 @@
 #include "stm32f4xx_it.h"
 #include "usartl1.h"
 #include "irlink.h"
-
+#include "motor.h"
 
 extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -172,6 +172,16 @@ void SysTick_Handler(void) {
 	mytick ++;
 }
 
+/**
+  * @brief  This function handles TIM1 global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void TIM_HALL_SPEED_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htimEncSpeed);
+
+}
 
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */

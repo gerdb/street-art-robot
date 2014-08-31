@@ -43,10 +43,15 @@ TIM_HandleTypeDef htimPump;
 TIM_HandleTypeDef htimEncM1;
 TIM_HandleTypeDef htimEncM2;
 TIM_HandleTypeDef htimEncSpeed;
+//DMA_HandleTypeDef hDMAEncSpeed;
 TIM_Encoder_InitTypeDef sConfigEncM;
 TIM_IC_InitTypeDef sConfigEncSpeed;
 TIM_OC_InitTypeDef sConfigTimMotor;
 TIM_OC_InitTypeDef sConfigTimPump;
+
+uint16_t motorHallPeriode[4] = {0,0,0,0};
+uint16_t motorHallLastCapVal[4] = {0,0,0,0};
+uint32_t icapt_buf0[200]= {0,0};
 
 /* Timer handler declaration */
 TIM_HandleTypeDef    TimHandle;
@@ -79,6 +84,7 @@ void MOTOR_Init(void) {
 	MOTOR_HALL_M1_ENC_CLK_ENABLE();
 	MOTOR_HALL_M2_ENC_CLK_ENABLE();
 	MOTOR_HALL_SPEED_CLK_ENABLE();
+	//MOTOR_HALL_SPEED_DMA_CLK_ENABLE();
 
 	// Motor driver --------------------------------------------------------
 
@@ -180,7 +186,7 @@ void MOTOR_Init(void) {
 
 	GPIO_InitStruct.Pin = MOTOR_HALL_M1A_SPEED_PIN | MOTOR_HALL_M1B_SPEED_PIN
 						| MOTOR_HALL_M2A_SPEED_PIN | MOTOR_HALL_M2B_SPEED_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
 	GPIO_InitStruct.Alternate = MOTOR_HALL_SPEED_TIMER_AF;
@@ -220,28 +226,62 @@ void MOTOR_Init(void) {
     HAL_TIM_Encoder_Start(&htimEncM2, TIM_CHANNEL_1);
     HAL_TIM_Encoder_Start(&htimEncM2, TIM_CHANNEL_2);
 
+
     // Timer configuration for input capture
     htimEncSpeed.Instance = MOTOR_HALL_SPEED_TIMER;
     htimEncSpeed.Init.Period = 0xFFFF;
-    htimEncSpeed.Init.Prescaler = 0;
+    htimEncSpeed.Init.Prescaler = 840-1; // 10us
     htimEncSpeed.Init.ClockDivision = 0;
     htimEncSpeed.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_IC_Init(&htimEncSpeed);
 
+//    // Configure the DMA stream
+//    // Set the parameters to be configured
+//    hDMAEncSpeed.Instance = MOTOR_HALL_SPEED_DMA_Stream;
+//
+//    hDMAEncSpeed.Init.Channel  = DMA_CHANNEL_0;
+//    hDMAEncSpeed.Init.Direction = DMA_PERIPH_TO_MEMORY;
+//    hDMAEncSpeed.Init.PeriphInc = DMA_PINC_DISABLE;
+//    hDMAEncSpeed.Init.MemInc = DMA_MINC_ENABLE;
+//    hDMAEncSpeed.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+//    hDMAEncSpeed.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+//    hDMAEncSpeed.Init.Mode = DMA_CIRCULAR;
+//    hDMAEncSpeed.Init.Priority = DMA_PRIORITY_HIGH;
+//    hDMAEncSpeed.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+//    hDMAEncSpeed.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL;
+//    hDMAEncSpeed.Init.MemBurst = DMA_MBURST_SINGLE;
+//    hDMAEncSpeed.Init.PeriphBurst = DMA_PBURST_SINGLE;
+//
+//    HAL_DMA_Init(&hDMAEncSpeed);
+//
+//    // Associate the initialized DMA handle to the the timer handle
+//    __HAL_LINKDMA(&htimEncSpeed, hdma[TIM_DMA_ID_CC1], hDMAEncSpeed);
+
     sConfigEncSpeed.ICFilter = 0;
-    sConfigEncSpeed.ICPolarity = TIM_ICPOLARITY_BOTHEDGE;
+    sConfigEncSpeed.ICPolarity = TIM_ICPOLARITY_RISING;
     sConfigEncSpeed.ICPrescaler = TIM_ICPSC_DIV1;
     sConfigEncSpeed.ICSelection = TIM_ICSELECTION_DIRECTTI;
+
+    /*##-2- Configure the NVIC for TIMx #########################################*/
+
+    HAL_NVIC_SetPriority(TIM_HALL_SPEED_IRQn, 0, 1);
+
+    /* Enable the TIM4 global Interrupt */
+    HAL_NVIC_EnableIRQ(TIM_HALL_SPEED_IRQn);
 
     // Input capture mode
     HAL_TIM_IC_ConfigChannel(&htimEncSpeed, &sConfigEncSpeed, TIM_CHANNEL_1);
     HAL_TIM_IC_ConfigChannel(&htimEncSpeed, &sConfigEncSpeed, TIM_CHANNEL_2);
     HAL_TIM_IC_ConfigChannel(&htimEncSpeed, &sConfigEncSpeed, TIM_CHANNEL_3);
     HAL_TIM_IC_ConfigChannel(&htimEncSpeed, &sConfigEncSpeed, TIM_CHANNEL_4);
-	HAL_TIM_IC_Start(&htimEncSpeed, TIM_CHANNEL_1);
-	HAL_TIM_IC_Start(&htimEncSpeed, TIM_CHANNEL_2);
-	HAL_TIM_IC_Start(&htimEncSpeed, TIM_CHANNEL_3);
-	HAL_TIM_IC_Start(&htimEncSpeed, TIM_CHANNEL_4);
+    HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_1);
+    HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_2);
+    HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_3);
+    HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_4);
+//    HAL_TIM_IC_Start_DMA(&htimEncSpeed, TIM_CHANNEL_1,icapt_buf0,2);
+//    HAL_TIM_IC_Start_DMA(&htimEncSpeed, TIM_CHANNEL_2,&icapt_buf[1][0],2);
+//    HAL_TIM_IC_Start_DMA(&htimEncSpeed, TIM_CHANNEL_3,&icapt_buf[2][0],2);
+//    HAL_TIM_IC_Start_DMA(&htimEncSpeed, TIM_CHANNEL_4,&icapt_buf[3][0],2);
 
 
 
@@ -301,4 +341,49 @@ void MOTOR_SetVal(int motorNr, int value, uint8_t current) {
 	}
 
 
+}
+
+
+/**
+  * @brief  Conversion complete callback in non blocking mode
+  * @param  htim: TIM handle
+  * @retval None
+  */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	uint16_t captureVal;
+	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
+		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		motorHallPeriode[0] = captureVal - motorHallLastCapVal[0];
+		motorHallLastCapVal[0] = captureVal;
+	}
+//  if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+//  {
+//    if(uhCaptureIndex == 0)
+//    {
+//      /* Get the 1st Input Capture value */
+//      uwIC2Value1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+//      uhCaptureIndex = 1;
+//    }
+//    else if(uhCaptureIndex == 1)
+//    {
+//      /* Get the 2nd Input Capture value */
+//      uwIC2Value2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+//
+//      /* Capture computation */
+//      if (uwIC2Value2 > uwIC2Value1)
+//      {
+//        uwDiffCapture = (uwIC2Value2 - uwIC2Value1);
+//      }
+//      else  /* (uwIC2Value2 <= uwIC2Value1) */
+//      {
+//        uwDiffCapture = ((0xFFFF - uwIC2Value1) + uwIC2Value2);
+//      }
+//
+//      /* Frequency computation: for this example TIMx (TIM1) is clocked by
+//         2xAPB2Clk */
+//      uwFrequency = (2*HAL_RCC_GetPCLK2Freq()) / uwDiffCapture;
+//      uhCaptureIndex = 0;
+//    }
+//  }
 }

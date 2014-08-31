@@ -43,7 +43,6 @@ int mytick = 0;
  */
 int main(void) {
 
-	char s[20];
 	int i = 12345;
 	// Configure the system clock to 168 Mhz
 	SystemClock_Config();
@@ -98,9 +97,9 @@ int main(void) {
 		}
 		// Debug ports
 		//USARTL1_RxBufferTask();
-		i = TIM3->CNT;
-		sprintf (s,"%5u", i);
-		OLED_Print(40, 0, OLED_SIZE_LARGE, s);
+		//i = TIM8->CCR1;
+		sprintf (txt,"%5u", (unsigned int)motorHallPeriode[0]);
+		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();
 	}
 

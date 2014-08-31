@@ -29,11 +29,15 @@
 #include "stm32f4xx_hal.h"
 
 /* defines ------------------------------------------------------------------*/
+
+// Clocks
 #define MOTOR_PWM_CLK_ENABLE()			__GPIOA_CLK_ENABLE()
 #define MOTOR_CURR_CLK_ENABLE()			__GPIOE_CLK_ENABLE()
 #define MOTOR_HALL_M1_ENC_CLK_ENABLE()	__GPIOA_CLK_ENABLE()
 #define MOTOR_HALL_M2_ENC_CLK_ENABLE()	__GPIOD_CLK_ENABLE()
 #define MOTOR_HALL_SPEED_CLK_ENABLE()	__GPIOC_CLK_ENABLE()
+#define MOTOR_HALL_SPEED_DMA_CLK_ENABLE()	__DMA2_CLK_ENABLE()
+// Pins
 #define MOTOR_M2_IN1_PIN				GPIO_PIN_0
 #define MOTOR_M2_IN2_PIN				GPIO_PIN_1
 #define MOTOR_M1_IN1_PIN				GPIO_PIN_2
@@ -58,38 +62,49 @@
 #define MOTOR_HALL_M1B_SPEED_PIN		GPIO_PIN_7
 #define MOTOR_HALL_M2A_SPEED_PIN		GPIO_PIN_8
 #define MOTOR_HALL_M2B_SPEED_PIN		GPIO_PIN_9
+// Port
 #define MOTOR_PWM_PORT					GPIOA
 #define MOTOR_CURR_PORT					GPIOE
 #define MOTOR_HALL_M1_ENC_PORT			GPIOA
 #define MOTOR_HALL_M2_ENC_PORT			GPIOD
 #define MOTOR_HALL_SPEED_PORT			GPIOC
+// Bit shift
 #define MOTOR_M2_SHIFT					0
 #define MOTOR_M1_SHIFT					7
 #define MOTOR_M2_MASK					(0x1F << MOTOR_M2_SHIFT)
 #define MOTOR_M1_MASK					(0x1F << MOTOR_M1_SHIFT)
+// Alternate functions
 #define PUMP_PWM_TIMER_AF				GPIO_AF1_TIM1
 #define MOTOR_PWM_TIMER_AF				GPIO_AF2_TIM5
 #define MOTOR_HALL_ENC1_TIMER_AF		GPIO_AF2_TIM3
 #define MOTOR_HALL_ENC2_TIMER_AF		GPIO_AF2_TIM4
 #define MOTOR_HALL_SPEED_TIMER_AF		GPIO_AF3_TIM8
+// Timer
 #define PUMP_PWM_TIMER					TIM1
 #define MOTOR_PWM_TIMER					TIM5
 #define MOTOR_HALL_ENC1_TIMER			TIM3
 #define MOTOR_HALL_ENC2_TIMER			TIM4
 #define MOTOR_HALL_SPEED_TIMER			TIM8
+//CLK
 #define PUMP_PWM_TIMER_CLK_ENABLE()					__TIM1_CLK_ENABLE()
 #define MOTOR_PWM_TIMER_CLK_ENABLE()				__TIM5_CLK_ENABLE()
 #define MOTOR_HALL_ENC1_TIMER_CLK_ENABLE()			__TIM3_CLK_ENABLE()
 #define MOTOR_HALL_ENC2_TIMER_CLK_ENABLE()			__TIM4_CLK_ENABLE()
 #define MOTOR_HALL_SPEED_TIMER_CLK_ENABLE()			__TIM8_CLK_ENABLE()
-
-
+#define MOTOR_HALL_SPEED_DMA_Stream					DMA2_Stream0
+//IRQ
+#define TIM_HALL_SPEED_IRQn                      TIM8_CC_IRQn
+#define TIM_HALL_SPEED_IRQHandler                TIM8_CC_IRQHandler
 
 #define MOTOR_M1	1
 #define MOTOR_M2 	2
 #define MOTOR_M3 	3
 #define MOTOR_PUMP 	MOTOR_M3
 
+/* global variables --------------------------------------------------------*/
+extern uint32_t icapt_buf0[200];
+extern TIM_HandleTypeDef htimEncSpeed;
+extern uint16_t motorHallPeriode[4];
 /* Function Prototypes --------------------------------------------------------*/
 void MOTOR_Init(void);
 void MOTOR_SetVal(int motorNr, int value, uint8_t current);
