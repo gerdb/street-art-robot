@@ -36,11 +36,9 @@ typedef enum {
 } enDecodeState;
 
 
-
 /* Function Prototypes --------------------------------------------------------*/
 void USARTL2_Init(void);
 void USARTL2_Decode(char c);
-void USARTL2_FrameCallback(void);
 
 
 #endif /* USART_H_ */

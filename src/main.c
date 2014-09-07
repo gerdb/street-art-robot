@@ -43,7 +43,7 @@ int mytick = 0;
  */
 int main(void) {
 
-	int i = 12345;
+	//int i = 12345;
 	// Configure the system clock to 168 Mhz
 	SystemClock_Config();
 
@@ -54,19 +54,18 @@ int main(void) {
 	HAL_SYSTICK_Config(168000000/ 1000);
 
 	// Initialize the modules
-	OLED_Init();
-	SERVO_Init();
-	MOTOR_Init();
-	SWITCH_Init();
-/*
+	OLED_Init();	// OLED Display
+	SERVO_Init();	// 2 servo motors
+	MOTOR_Init();	// 3 driving motors
+	SWITCH_Init();	// 5 button switches
+	USARTL2_Init(); // Initialize the debug port
+
+	/*
 	// Initialize the power module
 	POWER_Init();
 
 	// Initialize the IR link
 	IRLINK_Init();
-
-	// Initialize the debug port
-	USARTL2_Init();
 */
 	OLED_Clr();
 	// Main loop
@@ -96,7 +95,8 @@ int main(void) {
 			MOTOR_SetVal(MOTOR_M1, 2100, 255);
 		}
 		// Debug ports
-		//USARTL1_RxBufferTask();
+		USARTL1_RxBufferTask();
+
 		//i = TIM8->CCR1;
 		sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);

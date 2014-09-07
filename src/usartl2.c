@@ -64,17 +64,6 @@ uint32_t hex2dec(char c) {
 }
 
 /**
- * @brief This function is called, when a complete frame was decoded
- * @param none
- * @retval none
- */
-void USARTL2_FrameCallback(void) {
-	if (debug_on) {
-		//my_printf("%04d.%03d;%04d.%03d;%05d\r\n", position_x, position_subx, position_y, position_suby, intensity);
-	}
-}
-
-/**
  * @brief  decode the received bytes
  *
  * @param  none

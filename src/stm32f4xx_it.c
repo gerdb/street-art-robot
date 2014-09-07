@@ -183,12 +183,6 @@ void TIM_HALL_SPEED_IRQHandler(void)
 
 }
 
-/******************************************************************************/
-/*                 STM32F4xx Peripherals Interrupt Handlers                   */
-/*  Add here the Interrupt Handler for the used peripheral(s) , for the  */
-/*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32f4xx.s).                                               */
-/******************************************************************************/
 /**
  * @brief  This function handles UART interrupt request.
  * @param  None
