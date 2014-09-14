@@ -102,6 +102,7 @@
 /* global variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htimEncSpeed;
 extern uint16_t motorHallPeriode[4];
+extern TIM_HandleTypeDef htimPump; // Timer1 is shared together with the IRLINK module
 /* Function Prototypes --------------------------------------------------------*/
 void MOTOR_Init(void);
 void MOTOR_SetVal(int motorNr, int value, uint8_t current);

@@ -31,6 +31,7 @@
 #include "motor.h"
 #include "switch.h"
 #include "rc.h"
+#include "irlink.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -62,7 +63,7 @@ int main(void) {
 	USARTL2_Init(); // Initialize the debug port
 	RC_Init(); 		// Initialize the RC receiver
 	POWER_Init();	// Initialize the power module
-	//IRLINK_Init();	// Initialize the IR link
+	IRLINK_Init();	// Initialize the IR link
 
 
 	OLED_Clr();
@@ -97,7 +98,8 @@ int main(void) {
 
 		//i = TIM8->CCR1;
 		//sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
-		sprintf (txt,"%5u", (unsigned int)POWER_vbat);
+		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
+		sprintf (txt,"%5u", (unsigned int)IRperiode);
 
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();

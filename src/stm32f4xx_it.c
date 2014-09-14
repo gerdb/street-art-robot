@@ -168,13 +168,12 @@ void PendSV_Handler(void) {
  * @retval None
  */
 void SysTick_Handler(void) {
-	IRLINK_1msTask();
 	HAL_IncTick();
 	mytick ++;
 }
 
 /**
-  * @brief  This function handles TIM1 global interrupt request.
+  * @brief  This function handles TIM8 global interrupt request.
   * @param  None
   * @retval None
   */
@@ -183,6 +182,18 @@ void TIM_HALL_SPEED_IRQHandler(void)
   HAL_TIM_IRQHandler(&htimEncSpeed);
 
 }
+
+
+/**
+  * @brief  This function handles TIM1 global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void IRLINK_IRQHandler(void)
+{
+	IRLINK_TimerIRQ();
+}
+
 
 /**
  * @brief  This function handles UART interrupt request.

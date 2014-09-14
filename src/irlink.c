@@ -24,22 +24,16 @@
 /* Includes -----------------------------------------------------------------*/
 
 #include "irlink.h"
-
+#include "motor.h"  // Because the Timer1 is shared with the motor module
 /* local variables ----------------------------------------------------------*/
-uint16_t irdata[4] = { 0, 0, 0, 0};
+uint16_t irdata[4] = { 0, 0, 0, 0 };
 
-TIM_HandleTypeDef htim3;
-TIM_OC_InitTypeDef sConfigTim3;
-CRC_HandleTypeDef   CrcHandle;
-uint32_t uwCRCValue = 0;
+TIM_IC_InitTypeDef sConfigIRlink;
+CRC_HandleTypeDef CrcHandle;
+uint32_t IRuwCRCValue = 0;
+uint16_t IRlastCaptureVal = 0;
+uint16_t IRperiode = 0;
 
-int header_cnt;
-int header_sent;
-int header_endcnt;
-int send_data;
-int data_phase_cnt;
-int data_bit_cnt;
-int data_byte_cnt;
 
 /**
  * @brief  Initialize the module and configure PWM PB5 as PWM output with 36kHz
@@ -47,210 +41,87 @@ int data_byte_cnt;
  * @retval None
  */
 void IRLINK_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_InitStruct.Pin = IRLINK_IN_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStruct.Alternate = IRLINK_IN_AF;
+	HAL_GPIO_Init(IRLINK_PORT, &GPIO_InitStruct);
 
 	// Timer configuration
-	htim3.Instance = TIM3;
-	htim3.Init.Period = 1166 - 1; // = 36kHz = 42MHz / 1166
-	htim3.Init.Prescaler = 1;
-	htim3.Init.ClockDivision = 1;
-	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	HAL_TIM_PWM_Init(&htim3);
+	// Timer is already configured in motor.c during the
+	// initialization of the pump motor
 
-	// Configure Timer 3 channel 2 as PWM output
-	sConfigTim3.OCMode = TIM_OCMODE_PWM1;
-	sConfigTim3.OCIdleState = TIM_OUTPUTSTATE_ENABLE;
-	sConfigTim3.Pulse = 0;
-	sConfigTim3.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigIRlink.ICFilter = 0;
+	sConfigIRlink.ICPolarity = TIM_ICPOLARITY_RISING;
+	sConfigIRlink.ICPrescaler = TIM_ICPSC_DIV1;
+	sConfigIRlink.ICSelection = TIM_ICSELECTION_DIRECTTI;
 
-	// PWM Mode
-	HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigTim3, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	// Configure the NVIC
+	HAL_NVIC_SetPriority(IRLINK_IRQn, 0, 1);
+
+	/* Enable the TIM1 global Interrupt */
+	HAL_NVIC_EnableIRQ(IRLINK_IRQn);
+
+	// Input capture mode
+	HAL_TIM_IC_ConfigChannel(&htimPump, &sConfigIRlink, TIM_CHANNEL_4);
+	HAL_TIM_IC_Start_IT(&htimPump, TIM_CHANNEL_4);
 
 	// Configure the CRC module
 	CrcHandle.Instance = CRC;
 	HAL_CRC_Init(&CrcHandle);
 
-	header_cnt = 0;
-	data_phase_cnt = 0;
-	data_bit_cnt = 0;
-	header_sent = 0;
-
-	// Set to 0 to stop the transmission
-	send_data = 0;
 }
 
 /**
- * @brief  Outputs a 36kHz burst, or none
- * @param  value != 0 to output a burst
+ * @brief CRC MSP Initialization
+ *        This function configures the hardware resources used in this example:
+ *           - Peripheral's clock enable
+ * @param hcrc: CRC handle pointer
  * @retval None
  */
-void IRLINK_Output(int value) {
-	if (value != 0) {
-		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 1166 / 2);
-	} else {
-		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
-	}
-
+void HAL_CRC_MspInit(CRC_HandleTypeDef *hcrc) {
+	/* CRC Peripheral clock enable */
+	__CRC_CLK_ENABLE();
 }
 
 /**
- * @brief  Initializes the TIM PWM MSP.
- * @param  htim: TIM handle
+ * @brief CRC MSP De-Initialization
+ *        This function freeze the hardware resources used in this example:
+ *          - Disable the Peripheral's clock
+ * @param hcrc: CRC handle pointer
  * @retval None
  */
-void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim) {
-	GPIO_InitTypeDef GPIO_InitStructure;
+void HAL_CRC_MspDeInit(CRC_HandleTypeDef *hcrc) {
+	/* Enable CRC reset state */
+	__CRC_FORCE_RESET();
 
-	// TIM3 clock enable
-	__TIM3_CLK_ENABLE();
-
-	// GPIOB clock enable
-	__GPIOB_CLK_ENABLE();
-
-	// GPIO Configuration: Pin B5 as output push-pull
-	GPIO_InitStructure.Pin = GPIO_PIN_5;
-	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStructure.Pull = GPIO_NOPULL;
-	GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStructure.Alternate = GPIO_AF2_TIM3;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+	/* Release CRC from reset state */
+	__CRC_RELEASE_RESET();
 }
 
-
 /**
- * @brief  Send the header
- * @param  None
+ * @brief The input capture service function
+ * @param None
  * @retval None
  */
-void IRLINK_StartHeader(void) {
-	IRLINK_Output(1);
-	header_cnt = 5 + 1;
-	header_sent = 1;
-}
+void IRLINK_TimerIRQ(void) {
+	uint16_t captureVal;
 
-
-/**
- * @brief  Send all the data in the 1ms task
- * @param  None
- * @retval None
- */
-void IRLINK_1msTask(void) {
-
-	// Header is n ms high and then one ms low.
-	if (header_cnt > 0) {
-		header_cnt--;
-		//IRLINK_Output(1);
-
-	} else if(send_data) {
-		if (header_endcnt > 0) {
-			// pause x ms
-			header_endcnt--;
-			IRLINK_Output(0);
-		} else {
-			// Send now the data
-			if (data_byte_cnt < 4) {
-
-				// Manchester code
-				if (data_phase_cnt == 0) {
-					if (irdata[data_byte_cnt] & 0x8000) {
-						IRLINK_Output(1);
-					} else {
-						IRLINK_Output(0);
-					}
-				} else {
-					if (irdata[data_byte_cnt] & 0x8000) {
-						IRLINK_Output(0);
-					} else {
-						IRLINK_Output(1);
-					}
-				}
-
-				// Next phase
-				data_phase_cnt++;
-				if (data_phase_cnt >= 2 ) {
-
-					// Next bit
-					irdata[data_byte_cnt] <<= 1;
-					data_phase_cnt = 0;
-					data_bit_cnt ++;
-					if (data_bit_cnt >= 8 ) {
-
-						// Next byte
-						data_bit_cnt = 0;
-						data_byte_cnt ++;
-					}
-				}
-			} else {
-				// finished
-				IRLINK_Output(0);
-				send_data = 0;
-				header_sent = 0;
+	// Capture compare 4 event
+	if (__HAL_TIM_GET_FLAG(&htimPump, TIM_FLAG_CC4) != RESET) {
+		if (__HAL_TIM_GET_ITSTATUS(&htimPump, TIM_IT_CC4) != RESET) {
+			__HAL_TIM_CLEAR_IT(&htimPump, TIM_IT_CC4);
+			htimPump.Channel = HAL_TIM_ACTIVE_CHANNEL_4;
+			// Input capture event
+			if ((htimPump.Instance->CCMR2 & TIM_CCMR2_CC4S) != 0x00) {
+				captureVal = HAL_TIM_ReadCapturedValue(&htimPump, TIM_CHANNEL_4);
+				IRperiode = captureVal - IRlastCaptureVal;
+				IRlastCaptureVal = captureVal;
 			}
+			htimPump.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
 		}
 	}
-}
-
-
-
-/**
- * @brief  The data to send. All data is copied to a memory structure
- *
- * @param  track_status The track_status
- * @param  position_x The position_x
- * @param  position_subx The position_subx
- * @param  position_y The position_y
- * @param  position_suby The position_suby
- * @param  intensity The intensity
- * @retval None
- */
-void IRLINK_Send(int track_status, int position_x,
-		int position_subx, int position_y, int position_suby, int intensity) {
-
-	// If header was not sent, do not send data
-	if (!header_sent)
-		return;
-
-	irdata[0] = position_x*10 + position_subx / 100;
-	irdata[1] = position_y*10 + position_suby / 100;
-	irdata[2] = (intensity/256)*256 + (int)track_status;
-	irdata[3] = 0;
-
-	// Calculate the CRC
-	uwCRCValue = HAL_CRC_Accumulate(&CrcHandle, (uint32_t *)irdata, 4 / 2);
-	irdata[3] = (uint16_t)uwCRCValue;
-
-	data_phase_cnt = 0;
-	data_bit_cnt = 0;
-	data_byte_cnt = 0;
-	header_endcnt = 3;
-	send_data = 1;
-}
-
-/**
-  * @brief CRC MSP Initialization
-  *        This function configures the hardware resources used in this example:
-  *           - Peripheral's clock enable
-  * @param hcrc: CRC handle pointer
-  * @retval None
-  */
-void HAL_CRC_MspInit(CRC_HandleTypeDef *hcrc)
-{
-   /* CRC Peripheral clock enable */
-  __CRC_CLK_ENABLE();
-}
-
-/**
-  * @brief CRC MSP De-Initialization
-  *        This function freeze the hardware resources used in this example:
-  *          - Disable the Peripheral's clock
-  * @param hcrc: CRC handle pointer
-  * @retval None
-  */
-void HAL_CRC_MspDeInit(CRC_HandleTypeDef *hcrc)
-{
-  /* Enable CRC reset state */
-  __CRC_FORCE_RESET();
-
-  /* Release CRC from reset state */
-  __CRC_RELEASE_RESET();
 }
