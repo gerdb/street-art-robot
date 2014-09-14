@@ -30,6 +30,7 @@
 #include "servo.h"
 #include "motor.h"
 #include "switch.h"
+#include "rc.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -59,6 +60,7 @@ int main(void) {
 	MOTOR_Init();	// 3 driving motors
 	SWITCH_Init();	// 5 button switches
 	USARTL2_Init(); // Initialize the debug port
+	RC_Init(); 		// Initialize the RC receiver
 
 	/*
 	// Initialize the power module
@@ -82,16 +84,16 @@ int main(void) {
 
 		SWITCH_Task();
 
-		if (SWITCH_GetClick(SWITCH_LEFT)) {
+		if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
 			MOTOR_SetVal(MOTOR_M1, 800, 255);
 		}
-		if (SWITCH_GetClick(SWITCH_RIGHT)) {
+		if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
 			MOTOR_SetVal(MOTOR_M1, 0, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_UP)) {
 			MOTOR_SetVal(MOTOR_M1, -800, 255);
 		}
-		if (SWITCH_GetClick(SWITCH_DOWN)) {
+		if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
 			MOTOR_SetVal(MOTOR_M1, 2100, 255);
 		}
 		// Debug ports

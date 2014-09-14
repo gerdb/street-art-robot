@@ -54,7 +54,7 @@ void USARTL1_Init(void) {
 	USARTL1_rx_rd_pointer = 0;
 	USARTL1_txen = 0;
 
-	UartHandle.Instance = USARTx;
+	UartHandle.Instance = USART_DBG;
 	UartHandle.Init.BaudRate = 115200;
 	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
 	UartHandle.Init.StopBits = UART_STOPBITS_1;

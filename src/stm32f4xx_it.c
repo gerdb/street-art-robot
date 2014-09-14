@@ -64,6 +64,7 @@
 #include "usartl1.h"
 #include "irlink.h"
 #include "motor.h"
+#include "rc.h"
 
 extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -188,8 +189,17 @@ void TIM_HALL_SPEED_IRQHandler(void)
  * @param  None
  * @retval None
  */
-void USARTx_IRQHandler(void) {
+void USART_DBG_IRQHandler(void) {
 	USARTL1_IRQHandler(&UartHandle);
+}
+
+/**
+ * @brief  This function handles UART interrupt request.
+ * @param  None
+ * @retval None
+ */
+void USART1_IRQHandler(void) {
+	RC_USART_IRQHandler();
 }
 
 /**
