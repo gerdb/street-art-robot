@@ -2,7 +2,7 @@
  *  Project     StreetArtRobot
  *  @file		power.c
  *  @author		Gerd Bartelt - www.sebulli.com
- *  @brief		switch on /off the system and measures the battery voltage
+ *  @brief		measures the battery voltage
  *
  *  @copyright	GPL3
  *
@@ -28,14 +28,9 @@
 /* local variables ----------------------------------------------------------*/
 // The result of the analog to digital conversion
 __IO uint16_t ADCConvertedValue[1] = { 0 };
-int battery = 0;
+int POWER_vbat = 0;
 
-// Debounce the power key
-int power_key_cnt = 2;
-int power_key = 1;
-int power_key_released = 0;
-
-// Low voltage switch off
+// Low voltage delay
 int low_voltage_cnt = 0;
 
 // ADC handler declaration
@@ -48,26 +43,8 @@ ADC_HandleTypeDef AdcHandle;
  */
 void POWER_Init(void) {
 
-	GPIO_InitTypeDef GPIO_InitStruct;
-
 	// Enable the GPIO_LED Clock */
 	POWER_GPIO_CLK_ENABLE();
-
-	// Configure the power hold pin
-	GPIO_InitStruct.Pin = POWER_HOLD_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-
-	HAL_GPIO_Init(POWER_GPIO_PORT, &GPIO_InitStruct);
-
-	HAL_GPIO_WritePin(POWER_GPIO_PORT, POWER_HOLD_PIN, GPIO_PIN_SET);
-
-	// Configure the power key pin
-	GPIO_InitStruct.Pin = POWER_KEY_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-
-	HAL_GPIO_Init(POWER_GPIO_PORT, &GPIO_InitStruct);
 
 	ADC_ChannelConfTypeDef sConfig;
 
@@ -109,54 +86,22 @@ void POWER_Init(void) {
  */
 void POWER_Task(void) {
 	// Scale the ADC result to mVs
-	// Resistor divider is 3:1
-	// Reference voltage: 3.0V = 3000mV
+	// Resistor divider is 6k8:1k
+	// Reference voltage: 3.3V = 3300mV
 	// ADC resolution 12bit = 0..4095
-	// Voltage = ADC / 4096 * 3000mV * 3
-	// Voltage = ADC * 1125 / 512
-	battery = ADCConvertedValue[0] * 1125 / 512;
+	// Voltage = ADC / 4096 * 3300mV * (6k8+1k)/1k
+	// Voltage = ADC * 201 / 32
+	POWER_vbat = ADCConvertedValue[0] * 201 / 32;
 
-
-	// Debounce the key
-	if (HAL_GPIO_ReadPin(POWER_GPIO_PORT, POWER_KEY_PIN)) {
-		if (power_key_cnt < 2) {
-			power_key_cnt ++;
-		}
-		else {
-			power_key = 1;
-		}
-	} else {
-		if (power_key_cnt > 0) {
-			power_key_cnt --;
-		}
-		else {
-			power_key = 0;
-		}
-	}
-
-	// Key was released
-	if (power_key==0) {
-		power_key_released = 1;
-	}
 
 	// Low voltage under 5.5Volt
-	if (battery < 5500) {
+	if (POWER_vbat < 5500) {
 		low_voltage_cnt ++;
 	}
 	else {
 		low_voltage_cnt = 0;
 	}
 
-
-	// Switch off by key
-	if (power_key_released && (power_key == 1)) {
-		HAL_GPIO_WritePin(POWER_GPIO_PORT, POWER_HOLD_PIN, GPIO_PIN_RESET);
-	}
-
-	// Switch off by low voltage
-	if (low_voltage_cnt > 10) {
-		HAL_GPIO_WritePin(POWER_GPIO_PORT, POWER_HOLD_PIN, GPIO_PIN_RESET);
-	}
 }
 
 /**

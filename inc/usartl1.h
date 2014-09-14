@@ -41,7 +41,7 @@ extern UART_HandleTypeDef UartHandle;
 /* Defines -------------------------------------------------------------------*/
 /* Definition for USART_DBG clock resources */
 #define USART_DBG                           USART3
-#define USART_DBG_CLK_ENABLE()              __USART3_CLK_ENABLE();
+#define USART_DBG_CLK_ENABLE()              __USART3_CLK_ENABLE()
 #define USART_DBG_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
 #define USART_DBG_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
 

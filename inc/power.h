@@ -31,7 +31,7 @@
 
 
 /* Exported variables -------------------------------------------------------*/
-extern int battery;
+extern int POWER_vbat;
 
 
 /* Defines -------------------------------------------------------*/
@@ -52,11 +52,11 @@ extern int battery;
 #define ADCx_RELEASE_RESET()            __ADC_RELEASE_RESET()
 
 /* Definition for ADCx Channel Pin */
-#define ADCx_CHANNEL_PIN                GPIO_PIN_1
+#define ADCx_CHANNEL_PIN                GPIO_PIN_5
 #define ADCx_CHANNEL_GPIO_PORT          GPIOA
 
 /* Definition for ADCx's Channel */
-#define ADCx_CHANNEL                    ADC_CHANNEL_1
+#define ADCx_CHANNEL                    ADC_CHANNEL_5
 
 /* Definition for ADCx's DMA */
 #define ADCx_DMA_CHANNEL                DMA_CHANNEL_0

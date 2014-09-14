@@ -61,14 +61,10 @@ int main(void) {
 	SWITCH_Init();	// 5 button switches
 	USARTL2_Init(); // Initialize the debug port
 	RC_Init(); 		// Initialize the RC receiver
+	POWER_Init();	// Initialize the power module
+	//IRLINK_Init();	// Initialize the IR link
 
-	/*
-	// Initialize the power module
-	POWER_Init();
 
-	// Initialize the IR link
-	IRLINK_Init();
-*/
 	OLED_Clr();
 	// Main loop
 	 while (1) {
@@ -79,7 +75,7 @@ int main(void) {
 			blink = !blink;
 
 			//200ms Task
-			//POWER_Task();
+			POWER_Task();
 		}
 
 		SWITCH_Task();
@@ -100,7 +96,9 @@ int main(void) {
 		USARTL1_RxBufferTask();
 
 		//i = TIM8->CCR1;
-		sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
+		//sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
+		sprintf (txt,"%5u", (unsigned int)POWER_vbat);
+
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();
 	}

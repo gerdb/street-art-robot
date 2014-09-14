@@ -30,7 +30,7 @@
 
 /* defines ------------------------------------------------------------------*/
 #define USART_RC                           USART1
-#define USART_RC_CLK_ENABLE()              __USART1_CLK_ENABLE();
+#define USART_RC_CLK_ENABLE()              __USART1_CLK_ENABLE()
 #define USART_RC_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
 
 #define USART_RC_FORCE_RESET()             __USART1_FORCE_RESET()
