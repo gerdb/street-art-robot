@@ -24,16 +24,24 @@
 /* Includes -----------------------------------------------------------------*/
 
 #include "irlink.h"
-#include "motor.h"  // Because the Timer1 is shared with the motor module
 /* local variables ----------------------------------------------------------*/
 uint16_t irdata[4] = { 0, 0, 0, 0 };
 
+TIM_HandleTypeDef htimIRlink;
 TIM_IC_InitTypeDef sConfigIRlink;
 CRC_HandleTypeDef CrcHandle;
 uint32_t IRuwCRCValue = 0;
-uint16_t IRlastCaptureVal = 0;
-uint16_t IRperiode = 0;
+int ir_time;
+volatile uint16_t IRperiode = 0;
+en_irstate ir_state = IR_WAIT_IDLE;
+int data_bit_cnt;
+int data_word_cnt;
+uint16_t crcReceived;
 
+/* local functions ----------------------------------------------------------*/
+static void IRLINK_Received(int bit);
+
+/* functions ----------------------------------------------------------------*/
 
 /**
  * @brief  Initialize the module and configure PWM PB5 as PWM output with 36kHz
@@ -43,35 +51,34 @@ uint16_t IRperiode = 0;
 void IRLINK_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
+	// Enable the clocks
+	IRLINK_IO_ENABLE();
+	IRLINK_TIMER_CLK_ENABLE();
+
 	GPIO_InitStruct.Pin = IRLINK_IN_PIN;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = IRLINK_IN_AF;
 	HAL_GPIO_Init(IRLINK_PORT, &GPIO_InitStruct);
 
 	// Timer configuration
-	// Timer is already configured in motor.c during the
-	// initialization of the pump motor
-
-	sConfigIRlink.ICFilter = 0;
-	sConfigIRlink.ICPolarity = TIM_ICPOLARITY_RISING;
-	sConfigIRlink.ICPrescaler = TIM_ICPSC_DIV1;
-	sConfigIRlink.ICSelection = TIM_ICSELECTION_DIRECTTI;
+	htimIRlink.Instance = IRLINK_TIMER;
+	htimIRlink.Init.Period = 166 - 1; //166us
+	htimIRlink.Init.Prescaler = 168 - 1;
+	htimIRlink.Init.ClockDivision = 0;
+	htimIRlink.Init.CounterMode = TIM_COUNTERMODE_UP;
+	HAL_TIM_Base_Init(&htimIRlink);
+	HAL_TIM_Base_Start_IT(&htimIRlink);
 
 	// Configure the NVIC
 	HAL_NVIC_SetPriority(IRLINK_IRQn, 0, 1);
 
-	/* Enable the TIM1 global Interrupt */
-	HAL_NVIC_EnableIRQ(IRLINK_IRQn);
-
-	// Input capture mode
-	HAL_TIM_IC_ConfigChannel(&htimPump, &sConfigIRlink, TIM_CHANNEL_4);
-	HAL_TIM_IC_Start_IT(&htimPump, TIM_CHANNEL_4);
-
 	// Configure the CRC module
 	CrcHandle.Instance = CRC;
 	HAL_CRC_Init(&CrcHandle);
+
+	// Enable the timer global Interrupt
+	HAL_NVIC_EnableIRQ(IRLINK_IRQn);
 
 }
 
@@ -103,25 +110,199 @@ void HAL_CRC_MspDeInit(CRC_HandleTypeDef *hcrc) {
 }
 
 /**
- * @brief The input capture service function
+ * @brief The timer update event (every 0.5msec)
  * @param None
  * @retval None
  */
 void IRLINK_TimerIRQ(void) {
-	uint16_t captureVal;
-
-	// Capture compare 4 event
-	if (__HAL_TIM_GET_FLAG(&htimPump, TIM_FLAG_CC4) != RESET) {
-		if (__HAL_TIM_GET_ITSTATUS(&htimPump, TIM_IT_CC4) != RESET) {
-			__HAL_TIM_CLEAR_IT(&htimPump, TIM_IT_CC4);
-			htimPump.Channel = HAL_TIM_ACTIVE_CHANNEL_4;
-			// Input capture event
-			if ((htimPump.Instance->CCMR2 & TIM_CCMR2_CC4S) != 0x00) {
-				captureVal = HAL_TIM_ReadCapturedValue(&htimPump, TIM_CHANNEL_4);
-				IRperiode = captureVal - IRlastCaptureVal;
-				IRlastCaptureVal = captureVal;
-			}
-			htimPump.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+	// TIM Update event
+	if (__HAL_TIM_GET_FLAG(&htimIRlink, TIM_FLAG_UPDATE) != RESET) {
+		if (__HAL_TIM_GET_ITSTATUS(&htimIRlink, TIM_IT_UPDATE) != RESET) {
+			__HAL_TIM_CLEAR_IT(&htimIRlink, TIM_IT_UPDATE);
+			IRLINK_Decode();
 		}
 	}
 }
+
+/**
+ * @brief Decodes the incomming data stream as manchester code
+ * @param None
+ * @retval None
+ */
+void IRLINK_Decode(void) {
+	GPIO_PinState ir_in;
+
+	ir_in = HAL_GPIO_ReadPin(IRLINK_PORT, IRLINK_IN_PIN);
+
+	switch (ir_state) {
+
+	// Wait until there is silence
+	case IR_WAIT_IDLE:
+		if (ir_in == IR_IDLE)
+			ir_state = IR_WAIT_HEADER;
+		break;
+
+		// Wait until the header is received
+	case IR_WAIT_HEADER:
+		if (ir_in == IR_ACTIVE) {
+			ir_time = 0;
+			ir_state = IR_HEADER;
+		}
+
+		break;
+
+		// Wait until the header is complete
+	case IR_HEADER:
+		ir_time++;
+
+		if (ir_in == IR_IDLE) {
+			// If the header was at least 5us long, it was valid
+			if (ir_time >= (3 * 5)) {
+				ir_time = 0;
+				ir_state = IR_PAUSE;
+			} else {
+				// invalid, wait for a new header
+				ir_state = IR_WAIT_HEADER;
+			}
+		}
+		break;
+
+		// Wait until the header is complete
+	case IR_PAUSE:
+		ir_time++;
+
+		// Reset some variables for data reception
+		data_bit_cnt = 0;
+		data_word_cnt = 0;
+
+		// Exit, if the signal goes high
+		if (ir_in == IR_ACTIVE) {
+			if (ir_time >= (3 * 3)) {
+
+				if (ir_time >= (3 * 4 - 1)) {
+					IRLINK_Received(0);
+					ir_state = IR_DATA_0B;
+				} else {
+					IRLINK_Received(1);
+					ir_state = IR_DATA_1A;
+				}
+				ir_time = 0;
+			} else
+				ir_state = IR_WAIT_IDLE;
+		}
+
+		// signal was longer than 5us low
+		if (ir_time >= (3 * 5)) {
+			ir_time = 0;
+			ir_state = IR_WAIT_IDLE;
+		}
+		break;
+
+		// Wait for new data after a "0"
+	case IR_DATA_0A:
+		ir_time++;
+
+		// Exit, if the signal goes low
+		if (ir_in == IR_ACTIVE) {
+
+			if ((ir_time >= (3 * 1 - 1)) && (ir_time <= (3 * 1 + 1))) {
+				ir_state = IR_DATA_0B;
+			} else
+				ir_state = IR_WAIT_IDLE;
+
+			ir_time = 0;
+		}
+
+		break;
+
+		// Wait for new data after a "0"
+	case IR_DATA_0B:
+		ir_time++;
+
+		// Exit, if the signal goes high
+		if (ir_in == IR_IDLE) {
+
+			if ((ir_time >= (3 * 1 - 1)) && (ir_time <= (3 * 1 + 1))) {
+				IRLINK_Received(0);
+				ir_state = IR_DATA_0A;
+			} else if ((ir_time >= (3 * 2 - 1)) && (ir_time <= (3 * 2 + 1))) {
+				IRLINK_Received(1);
+				ir_state = IR_DATA_1B;
+			} else
+				ir_state = IR_WAIT_IDLE;
+
+			ir_time = 0;
+		}
+		break;
+
+		// Wait for new data after a "1"
+	case IR_DATA_1A:
+		ir_time++;
+		// Exit, if the signal goes low
+		if (ir_in == IR_IDLE) {
+
+			if ((ir_time >= (3 * 1 - 1)) && (ir_time <= (3 * 1 + 1))) {
+				ir_state = IR_DATA_1B;
+			} else
+				ir_state = IR_WAIT_IDLE;
+
+			ir_time = 0;
+		}
+		break;
+
+		// Wait for new data after a "1"
+	case IR_DATA_1B:
+		ir_time++;
+		// Exit, if the signal goes high
+		if (ir_in == IR_ACTIVE) {
+
+			if ((ir_time >= (3 * 1 - 1)) && (ir_time <= (3 * 1 + 1))) {
+				IRLINK_Received(1);
+				ir_state = IR_DATA_1A;
+			} else if ((ir_time >= (3 * 2 - 1)) && (ir_time <= (3 * 2 + 1))) {
+				IRLINK_Received(0);
+				ir_state = IR_DATA_0B;
+			} else
+				ir_state = IR_WAIT_IDLE;
+			ir_time = 0;
+		}
+
+		break;
+	}
+}
+
+/**
+ * @brief Decodes one bit of the manchester code
+ * @param bit: the received
+ * @retval None
+ */
+void IRLINK_Received(int bit) {
+
+	// Fill the data
+	irdata[data_word_cnt] <<= 1;
+	irdata[data_word_cnt] |= bit;
+
+	data_bit_cnt++;
+	if (data_bit_cnt >= 16) {
+
+		// Next byte
+		data_bit_cnt = 0;
+		data_word_cnt++;
+		if (data_word_cnt >= 4) {
+			crcReceived = irdata[3];
+			irdata[3] = 0;
+
+			// Calculate the CRC
+			IRuwCRCValue = (uint16_t)HAL_CRC_Calculate(&CrcHandle, (uint32_t *) irdata,
+					4 / 2);
+
+			// CRC was correct
+			if (crcReceived == IRuwCRCValue) {
+				// do something
+			}
+			ir_state = IR_WAIT_IDLE;
+		}
+	}
+}
+
+

@@ -64,6 +64,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usartl1.h"
+#include "irlink.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -79,7 +80,8 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
-void USARTx_IRQHandler(void);
+void IRLINK_IRQHandler(void);
+void USART_DBG_IRQHandler(void) ;
 
 
 #endif /* __STM32F4xx_IT_H */

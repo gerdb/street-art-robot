@@ -30,8 +30,27 @@
 #include "stm32f4xx_hal.h"
 
 
-extern uint16_t IRperiode;
+
+/* types ------------------------------------------------------------------*/
+typedef enum {
+	IR_WAIT_IDLE,
+	IR_WAIT_HEADER,
+	IR_HEADER,
+	IR_PAUSE,
+	IR_DATA_0A,
+	IR_DATA_0B,
+	IR_DATA_1A,
+	IR_DATA_1B
+} en_irstate;
+
+
+/* global variables ------------------------------------------------------------------*/
+extern volatile uint16_t IRperiode;
+
 /* defines ------------------------------------------------------------------*/
+
+#define IR_ACTIVE GPIO_PIN_RESET
+#define IR_IDLE   GPIO_PIN_SET
 
 // Clocks
 #define IRLINK_IO_ENABLE()			__GPIOA_CLK_ENABLE()
@@ -44,17 +63,18 @@ extern uint16_t IRperiode;
 // Alternate functions
 #define IRLINK_IN_AF				GPIO_AF1_TIM1
 // Timer
-#define IRLINK_TIMER				TIM1
+#define IRLINK_TIMER				TIM10
 //CLK
-#define IRLINK_TIMER_CLK_ENABLE()	__TIM1_CLK_ENABLE()
+#define IRLINK_TIMER_CLK_ENABLE()	__TIM10_CLK_ENABLE()
 
 //IRQ
-#define IRLINK_IRQn                      TIM1_CC_IRQn
-#define IRLINK_IRQHandler                TIM1_CC_IRQHandler
-
+#define IRLINK_IRQn                      TIM1_UP_TIM10_IRQn
+#define IRLINK_IRQHandler                TIM1_UP_TIM10_IRQHandler
 
 /* Function Prototypes --------------------------------------------------------*/
 void IRLINK_Init(void);
 void IRLINK_TimerIRQ(void);
+void IRLINK_Decode(void);
+
 
 #endif /* __IRLINK_H */

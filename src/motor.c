@@ -122,8 +122,8 @@ void MOTOR_Init(void) {
 
     // Timer configuration for pump
 	htimPump.Instance = PUMP_PWM_TIMER;
-	htimPump.Init.Period = 420 - 1; // = 20kHz = 168MHz / 2 / 42000
-	htimPump.Init.Prescaler = 20-1;
+	htimPump.Init.Period = 4200 - 1; // = 20kHz = 168MHz / 2 / 4200
+	htimPump.Init.Prescaler = 2-1;
 	htimPump.Init.ClockDivision = 1;
 	htimPump.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_PWM_Init(&htimPump);

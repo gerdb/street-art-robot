@@ -169,30 +169,19 @@ void PendSV_Handler(void) {
  */
 void SysTick_Handler(void) {
 	HAL_IncTick();
-	mytick ++;
+	mytick++;
 }
 
 /**
-  * @brief  This function handles TIM8 global interrupt request.
-  * @param  None
-  * @retval None
-  */
-void TIM_HALL_SPEED_IRQHandler(void)
-{
-  HAL_TIM_IRQHandler(&htimEncSpeed);
+ * @brief  This function handles TIM8 global interrupt request.
+ * @param  None
+ * @retval None
+ */
+void TIM_HALL_SPEED_IRQHandler(void) {
+	HAL_TIM_IRQHandler(&htimEncSpeed);
 
 }
 
-
-/**
-  * @brief  This function handles TIM1 global interrupt request.
-  * @param  None
-  * @retval None
-  */
-void IRLINK_IRQHandler(void)
-{
-	IRLINK_TimerIRQ();
-}
 
 
 /**
@@ -202,6 +191,16 @@ void IRLINK_IRQHandler(void)
  */
 void USART_DBG_IRQHandler(void) {
 	USARTL1_IRQHandler(&UartHandle);
+}
+
+
+/**
+ * @brief  This function handles TIM1 global interrupt request.
+ * @param  None
+ * @retval None
+ */
+void IRLINK_IRQHandler(void) {
+	IRLINK_TimerIRQ();
 }
 
 /**
