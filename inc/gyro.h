@@ -1,8 +1,8 @@
 /**
  *  Project     StreetArtRobot
- *  @file		stm32f4_board.h
+ *  @file		gyro.h
  *  @author		Gerd Bartelt - www.sebulli.com
- *  @brief		Header file for stm32f4_board.c
+ *  @brief		Header file for gyro.c
  *
  *  @copyright	GPL3
  *
@@ -22,8 +22,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32F4_BOARD_H
-#define __STM32F4_BOARD_H
+#ifndef __GYRO_H
+#define __GYRO_H
 
 
                                               
@@ -31,16 +31,18 @@
 #include "stm32f4xx_hal.h"
 
 
-/*##################### SPI1 ###################################*/
-#define OLED_SPIx                              SPI1
-#define OLED_SPIx_CLK_ENABLE()                 __SPI1_CLK_ENABLE()
-#define OLED_SPIx_GPIO_PORT                    GPIOA                      /* GPIOA */
-#define OLED_SPIx_AF                           GPIO_AF5_SPI1
-#define OLED_SPIx_GPIO_CLK_ENABLE()            __GPIOA_CLK_ENABLE()
-#define OLED_SPIx_GPIO_CLK_DISABLE()           __GPIOA_CLK_DISABLE()
-#define OLED_SPIx_SCK_PIN                      GPIO_PIN_5                 /* PA.05 */
-#define OLED_SPIx_MISO_PIN                     GPIO_PIN_6                 /* PA.06 */
-#define OLED_SPIx_MOSI_PIN                     GPIO_PIN_7                 /* PA.07 */
+/*##################### Gyro on SPI3 ###################################*/
+#define GYRO_SPIx                              SPI3
+#define GYRO_SPIx_CLK_ENABLE()                 __SPI3_CLK_ENABLE()
+#define GYRO_SPIx_IO_PORT                    GPIOC                      /* GPIOA */
+#define GYRO_SPIx_CS_PORT                    GPIOA                      /* GPIOA */
+#define GYRO_SPIx_AF                           GPIO_AF6_SPI3
+//#define GYRO_SPIx_GPIO_CLK_ENABLE()            __GPIOA_CLK_ENABLE()
+//#define GYRO_SPIx_GPIO_CLK_DISABLE()           __GPIOA_CLK_DISABLE()
+#define GYRO_SPIx_CS_PIN                       GPIO_PIN_4                  /* PA.04 */
+#define GYRO_SPIx_SCK_PIN                      GPIO_PIN_10                 /* PC.10 */
+#define GYRO_SPIx_MISO_PIN                     GPIO_PIN_11                 /* PC.11 */
+#define GYRO_SPIx_MOSI_PIN                     GPIO_PIN_12                 /* PC.12 */
 
 /* Maximum Timeout values for flags waiting loops. These timeouts are not based
    on accurate values, they just guarantee that the application will not remain
@@ -50,6 +52,16 @@
 #define SPIx_TIMEOUT_MAX                            0x1000 //The value of the maximal timeout for BUS waiting loops
 
 
-#endif /* __STM32F4_BOARD */
+
+/* Gyro addresses --------------------------------------------------------*/
+#define GYRO_PROD_ID	0x56
+#define GYRO_SERIAL_NUM	0x58
+
+
+
+/* Function Prototypes --------------------------------------------------------*/
+void GYRO_Init(void);
+uint16_t SPIx_WriteRead(uint8_t address, uint8_t data);
+#endif /* __GYRO_H */
 
 

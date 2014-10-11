@@ -32,6 +32,7 @@
 #include "switch.h"
 #include "rc.h"
 #include "irlink.h"
+#include "gyro.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -60,11 +61,11 @@ int main(void) {
 	SERVO_Init();	// 2 servo motors
 	MOTOR_Init();	// 3 driving motors
 	SWITCH_Init();	// 5 button switches
-	USARTL2_Init(); // Initialize the debug port
-	RC_Init(); 		// Initialize the RC receiver
-	POWER_Init();	// Initialize the power module
-	IRLINK_Init();	// Initialize the IR link
-
+	USARTL2_Init(); // debug port
+	RC_Init(); 		// RC receiver
+	POWER_Init();	// power module
+	IRLINK_Init();	// IR link
+	GYRO_Init();	// Gyro sensor
 
 	OLED_Clr();
 	// Main loop
@@ -99,10 +100,13 @@ int main(void) {
 		//i = TIM8->CCR1;
 		//sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
 		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
-		sprintf (txt,"%5u", (unsigned int)IRperiode);
+		//sprintf (txt,"%5u", (unsigned int)IRperiode);
+		sprintf (txt,"%5u", (unsigned int)SPIx_WriteRead(GYRO_PROD_ID, 0));
 
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();
+
+
 	}
 
 }

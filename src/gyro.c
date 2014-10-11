@@ -1,8 +1,8 @@
 /**
  *  Project     StreetArtRobot
- *  @file		stm32f4_board.c
+ *  @file		gyro.c
  *  @author		Gerd Bartelt - www.sebulli.com
- *  @brief		board specific function
+ *  @brief		gyro sensor
  *
  *  @copyright	GPL3
  *
@@ -21,7 +21,7 @@
  *
  */
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4_board.h"
+#include "gyro.h"
 
 
 uint32_t SpixTimeout = SPIx_TIMEOUT_MAX;    /*<! Value of Timeout when SPI communication fails */
@@ -29,9 +29,8 @@ uint32_t SpixTimeout = SPIx_TIMEOUT_MAX;    /*<! Value of Timeout when SPI commu
 static SPI_HandleTypeDef    SpiHandle;
 
 
-static void     SPIx_Init(void);
+
 static void     SPIx_MspInit(void);
-static uint8_t  SPIx_WriteRead(uint8_t Byte);
 static  void    SPIx_Error(void);
 
 
@@ -45,16 +44,16 @@ static  void    SPIx_Error(void);
   * @param  None
   * @retval None
   */
-static void SPIx_Init(void)
+void GYRO_Init(void)
 {
   if(HAL_SPI_GetState(&SpiHandle) == HAL_SPI_STATE_RESET)
   {
     /* SPI configuration -------------------------------------------------------*/
-    SpiHandle.Instance = OLED_SPIx;
+    SpiHandle.Instance = GYRO_SPIx;
     SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
     SpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
-    SpiHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
-    SpiHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
+    SpiHandle.Init.CLKPhase = SPI_PHASE_2EDGE;
+    SpiHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
     SpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
     SpiHandle.Init.CRCPolynomial = 7;
     SpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
@@ -74,18 +73,24 @@ static void SPIx_Init(void)
   * @param  Byte : Byte send.
   * @retval The received byte value
   */
-static uint8_t SPIx_WriteRead(uint8_t Byte)
+uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
 {
-  uint8_t receivedbyte = 0;
+  uint8_t txbytes[2];
+  uint8_t rxbytes[2];
+  uint16_t retval;
   
-  /* Send a Byte through the SPI peripheral */
-  /* Read byte from the SPI bus */
-  if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*) &Byte, (uint8_t*) &receivedbyte, 1, SpixTimeout) != HAL_OK)
+  txbytes[0] = address;
+  txbytes[1] = data;
+
+  // Send the 2 bytes and receive 2 bytes
+  HAL_GPIO_WritePin(GYRO_SPIx_CS_PORT, GYRO_SPIx_CS_PIN, RESET);
+  if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*) &txbytes, (uint8_t*) rxbytes, 2, SpixTimeout) != HAL_OK)
   {
     SPIx_Error();
   }
-  
-  return receivedbyte;
+  HAL_GPIO_WritePin(GYRO_SPIx_CS_PORT, GYRO_SPIx_CS_PIN, SET);
+  retval = ((uint16_t)rxbytes[0]<<8) | rxbytes[1];
+  return retval;
 }
 
 /**
@@ -99,7 +104,7 @@ static  void SPIx_Error(void)
   HAL_SPI_DeInit(&SpiHandle);
   
   /* Re-Initiaize the SPI comunication bus */
-  SPIx_Init();
+  //SPIx_Init();
 }
 
 
@@ -113,18 +118,25 @@ static void SPIx_MspInit(void)
   GPIO_InitTypeDef   GPIO_InitStructure;
 
   /* Enable the SPI periph */
-  OLED_SPIx_CLK_ENABLE();
-  
-  /* Enable SCK, MOSI and MISO GPIO clocks */
-  OLED_SPIx_GPIO_CLK_ENABLE();
-  
+  GYRO_SPIx_CLK_ENABLE();
+
+  /* Enable CS, SCK, MOSI and MISO GPIO clocks */
+  __GPIOA_CLK_ENABLE();
+  __GPIOC_CLK_ENABLE();
+
   /* SPI SCK, MOSI, MISO pin configuration */
-  GPIO_InitStructure.Pin = (OLED_SPIx_SCK_PIN | OLED_SPIx_MISO_PIN | OLED_SPIx_MOSI_PIN);
+  GPIO_InitStructure.Pin = (GYRO_SPIx_SCK_PIN | GYRO_SPIx_MISO_PIN | GYRO_SPIx_MOSI_PIN);
   GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
   GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-  GPIO_InitStructure.Alternate = OLED_SPIx_AF;
-  HAL_GPIO_Init(OLED_SPIx_GPIO_PORT, &GPIO_InitStructure);
+  GPIO_InitStructure.Alternate = GYRO_SPIx_AF;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+  GPIO_InitStructure.Pin = (GYRO_SPIx_CS_PIN);
+  GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+  GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
 
