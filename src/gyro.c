@@ -24,12 +24,11 @@
 #include "gyro.h"
 
 
-uint32_t SpixTimeout = SPIx_TIMEOUT_MAX;    /*<! Value of Timeout when SPI communication fails */
+uint32_t SpixTimeout = 10;    // Value of Timeout when SPI communication fails
 
 static SPI_HandleTypeDef    SpiHandle;
 
-
-
+static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data);
 static void     SPIx_MspInit(void);
 static  void    SPIx_Error(void);
 
@@ -67,13 +66,24 @@ void GYRO_Init(void)
   }
 }
 
+
+
+/**
+  * @brief  Gets the Gyro angle as integer
+  * @param  none.
+  * @retval The angle from 0 to 9827
+  */
+uint16_t GYRO_GetAngle(void) {
+	return SPIx_WriteRead(GYRO_ANGL_OUT, 0) & 0x3FFF;
+}
+
 /**
   * @brief  Sends a Byte through the SPI interface and return the Byte received 
   *         from the SPI bus.
   * @param  Byte : Byte send.
   * @retval The received byte value
   */
-uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
+static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
 {
   uint8_t txbytes[2];
   uint8_t rxbytes[2];
@@ -104,7 +114,7 @@ static  void SPIx_Error(void)
   HAL_SPI_DeInit(&SpiHandle);
   
   /* Re-Initiaize the SPI comunication bus */
-  //SPIx_Init();
+  //GYRO_Init();
 }
 
 

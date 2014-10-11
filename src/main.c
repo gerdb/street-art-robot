@@ -101,7 +101,7 @@ int main(void) {
 		//sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
 		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
 		//sprintf (txt,"%5u", (unsigned int)IRperiode);
-		sprintf (txt,"%5u", (unsigned int)SPIx_WriteRead(GYRO_PROD_ID, 0));
+		sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
 
 		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
 		OLED_Display();

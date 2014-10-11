@@ -54,6 +54,7 @@
 
 
 /* Gyro addresses --------------------------------------------------------*/
+#define GYRO_ANGL_OUT	0x0E
 #define GYRO_PROD_ID	0x56
 #define GYRO_SERIAL_NUM	0x58
 
@@ -61,7 +62,8 @@
 
 /* Function Prototypes --------------------------------------------------------*/
 void GYRO_Init(void);
-uint16_t SPIx_WriteRead(uint8_t address, uint8_t data);
+uint16_t GYRO_GetAngle(void);
+
 #endif /* __GYRO_H */
 
 
