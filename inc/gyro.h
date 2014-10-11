@@ -32,24 +32,22 @@
 
 
 /*##################### Gyro on SPI3 ###################################*/
-#define GYRO_SPIx                              SPI3
-#define GYRO_SPIx_CLK_ENABLE()                 __SPI3_CLK_ENABLE()
-#define GYRO_SPIx_IO_PORT                    GPIOC                      /* GPIOA */
-#define GYRO_SPIx_CS_PORT                    GPIOA                      /* GPIOA */
-#define GYRO_SPIx_AF                           GPIO_AF6_SPI3
-//#define GYRO_SPIx_GPIO_CLK_ENABLE()            __GPIOA_CLK_ENABLE()
-//#define GYRO_SPIx_GPIO_CLK_DISABLE()           __GPIOA_CLK_DISABLE()
-#define GYRO_SPIx_CS_PIN                       GPIO_PIN_4                  /* PA.04 */
-#define GYRO_SPIx_SCK_PIN                      GPIO_PIN_10                 /* PC.10 */
-#define GYRO_SPIx_MISO_PIN                     GPIO_PIN_11                 /* PC.11 */
-#define GYRO_SPIx_MOSI_PIN                     GPIO_PIN_12                 /* PC.12 */
+#define GYRO_SPI                              SPI3
+#define GYRO_SPI_CLK_ENABLE()                 __SPI3_CLK_ENABLE()
+#define GYRO_SPI_IO_PORT                      GPIOC                      /* GPIOA */
+#define GYRO_SPI_CS_PORT                      GPIOA                      /* GPIOA */
+#define GYRO_SPI_AF                           GPIO_AF6_SPI3
+#define GYRO_SPI_CS_PIN                       GPIO_PIN_4                  /* PA.04 */
+#define GYRO_SPI_SCK_PIN                      GPIO_PIN_10                 /* PC.10 */
+#define GYRO_SPI_MISO_PIN                     GPIO_PIN_11                 /* PC.11 */
+#define GYRO_SPI_MOSI_PIN                     GPIO_PIN_12                 /* PC.12 */
 
 /* Maximum Timeout values for flags waiting loops. These timeouts are not based
    on accurate values, they just guarantee that the application will not remain
    stuck if the SPI communication is corrupted.
    You may modify these timeout values depending on CPU frequency and application
    conditions (interrupts routines ...). */
-#define SPIx_TIMEOUT_MAX                            0x1000 //The value of the maximal timeout for BUS waiting loops
+#define GYRO_SPI_TIMEOUT_MAX 0x1000 //The value of the maximal timeout for BUS waiting loops
 
 
 

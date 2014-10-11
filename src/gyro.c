@@ -24,13 +24,12 @@
 #include "gyro.h"
 
 
-uint32_t SpixTimeout = 10;    // Value of Timeout when SPI communication fails
+uint32_t SpiTimeout = GYRO_SPI_TIMEOUT_MAX;    // Value of Timeout when SPI communication fails
 
-static SPI_HandleTypeDef    SpiHandle;
+static SPI_HandleTypeDef    GyroSpiHandle;
 
-static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data);
-static void     SPIx_MspInit(void);
-static  void    SPIx_Error(void);
+static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data);
+static void     GYRO_SPI_Error(void);
 
 
 /******************************************************************************
@@ -45,24 +44,46 @@ static  void    SPIx_Error(void);
   */
 void GYRO_Init(void)
 {
-  if(HAL_SPI_GetState(&SpiHandle) == HAL_SPI_STATE_RESET)
+  if(HAL_SPI_GetState(&GyroSpiHandle) == HAL_SPI_STATE_RESET)
   {
     /* SPI configuration -------------------------------------------------------*/
-    SpiHandle.Instance = GYRO_SPIx;
-    SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-    SpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
-    SpiHandle.Init.CLKPhase = SPI_PHASE_2EDGE;
-    SpiHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    SpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-    SpiHandle.Init.CRCPolynomial = 7;
-    SpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
-    SpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    SpiHandle.Init.NSS = SPI_NSS_SOFT;
-    SpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
-    SpiHandle.Init.Mode = SPI_MODE_MASTER;
+    GyroSpiHandle.Instance = GYRO_SPI;
+    GyroSpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    GyroSpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
+    GyroSpiHandle.Init.CLKPhase = SPI_PHASE_2EDGE;
+    GyroSpiHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
+    GyroSpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+    GyroSpiHandle.Init.CRCPolynomial = 7;
+    GyroSpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
+    GyroSpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    GyroSpiHandle.Init.NSS = SPI_NSS_SOFT;
+    GyroSpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
+    GyroSpiHandle.Init.Mode = SPI_MODE_MASTER;
 
-    SPIx_MspInit();
-    HAL_SPI_Init(&SpiHandle);
+    GPIO_InitTypeDef   GPIO_InitStructure;
+
+    /* Enable the SPI periph */
+    GYRO_SPI_CLK_ENABLE();
+
+    /* Enable CS, SCK, MOSI and MISO GPIO clocks */
+    __GPIOA_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
+
+    /* SPI SCK, MOSI, MISO pin configuration */
+    GPIO_InitStructure.Pin = (GYRO_SPI_SCK_PIN | GYRO_SPI_MISO_PIN | GYRO_SPI_MOSI_PIN);
+    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
+    GPIO_InitStructure.Alternate = GYRO_SPI_AF;
+    HAL_GPIO_Init(GYRO_SPI_IO_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.Pin = (GYRO_SPI_CS_PIN);
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
+    HAL_GPIO_Init(GYRO_SPI_CS_PORT, &GPIO_InitStructure);
+
+    HAL_SPI_Init(&GyroSpiHandle);
   }
 }
 
@@ -74,7 +95,7 @@ void GYRO_Init(void)
   * @retval The angle from 0 to 9827
   */
 uint16_t GYRO_GetAngle(void) {
-	return SPIx_WriteRead(GYRO_ANGL_OUT, 0) & 0x3FFF;
+	return GYRO_SPI_WriteRead(GYRO_ANGL_OUT, 0) & 0x3FFF;
 }
 
 /**
@@ -83,7 +104,7 @@ uint16_t GYRO_GetAngle(void) {
   * @param  Byte : Byte send.
   * @retval The received byte value
   */
-static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
+static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data)
 {
   uint8_t txbytes[2];
   uint8_t rxbytes[2];
@@ -93,12 +114,12 @@ static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
   txbytes[1] = data;
 
   // Send the 2 bytes and receive 2 bytes
-  HAL_GPIO_WritePin(GYRO_SPIx_CS_PORT, GYRO_SPIx_CS_PIN, RESET);
-  if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*) &txbytes, (uint8_t*) rxbytes, 2, SpixTimeout) != HAL_OK)
+  HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, RESET);
+  if(HAL_SPI_TransmitReceive(&GyroSpiHandle, (uint8_t*) &txbytes, (uint8_t*) rxbytes, 2, SpiTimeout) != HAL_OK)
   {
-    SPIx_Error();
+	  GYRO_SPI_Error();
   }
-  HAL_GPIO_WritePin(GYRO_SPIx_CS_PORT, GYRO_SPIx_CS_PIN, SET);
+  HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, SET);
   retval = ((uint16_t)rxbytes[0]<<8) | rxbytes[1];
   return retval;
 }
@@ -108,46 +129,16 @@ static uint16_t SPIx_WriteRead(uint8_t address, uint8_t data)
   * @param None
   * @retval None
   */
-static  void SPIx_Error(void)
+static void GYRO_SPI_Error(void)
 {
   /* De-initialize the SPI comunication bus */
-  HAL_SPI_DeInit(&SpiHandle);
+  HAL_SPI_DeInit(&GyroSpiHandle);
   
   /* Re-Initiaize the SPI comunication bus */
   //GYRO_Init();
 }
 
 
-/**
-  * @brief SPI MSP Init
-  * @param hspi: SPI handle
-  * @retval None
-  */
-static void SPIx_MspInit(void)
-{
-  GPIO_InitTypeDef   GPIO_InitStructure;
-
-  /* Enable the SPI periph */
-  GYRO_SPIx_CLK_ENABLE();
-
-  /* Enable CS, SCK, MOSI and MISO GPIO clocks */
-  __GPIOA_CLK_ENABLE();
-  __GPIOC_CLK_ENABLE();
-
-  /* SPI SCK, MOSI, MISO pin configuration */
-  GPIO_InitStructure.Pin = (GYRO_SPIx_SCK_PIN | GYRO_SPIx_MISO_PIN | GYRO_SPIx_MOSI_PIN);
-  GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-  GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-  GPIO_InitStructure.Alternate = GYRO_SPIx_AF;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-  GPIO_InitStructure.Pin = (GYRO_SPIx_CS_PIN);
-  GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStructure.Pull  = GPIO_PULLDOWN;
-  GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
-}
 
 
 

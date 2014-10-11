@@ -33,6 +33,7 @@
 #include "rc.h"
 #include "irlink.h"
 #include "gyro.h"
+#include "sdcard.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -66,6 +67,7 @@ int main(void) {
 	POWER_Init();	// power module
 	IRLINK_Init();	// IR link
 	GYRO_Init();	// Gyro sensor
+	SDCARD_Init();	// SD card
 
 	OLED_Clr();
 	// Main loop
