@@ -34,6 +34,7 @@
 #include "irlink.h"
 #include "gyro.h"
 #include "sdcard.h"
+#include "tm_stm32f4_fatfs.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -46,6 +47,13 @@ int mytick = 0;
  * @retval None
  */
 int main(void) {
+
+    //Fatfs object
+    FATFS FatFs;
+    //File object
+    FIL fil;
+    //Free and total space
+    uint32_t total, free;
 
 	//int i = 12345;
 	// Configure the system clock to 168 Mhz
@@ -68,8 +76,49 @@ int main(void) {
 	IRLINK_Init();	// IR link
 	GYRO_Init();	// Gyro sensor
 	SDCARD_Init();	// SD card
+    //TM_DELAY_Init();
+
 
 	OLED_Clr();
+
+
+
+
+
+
+    //Initialize system
+    //SystemInit();
+    //Initialize delays
+
+
+    //Mount drive
+    if (f_mount(&FatFs, "", 1) == FR_OK) {
+
+
+        //Try to open file
+        if (f_open(&fil, "1stfile.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) == FR_OK) {
+            //File opened, turn off RED and turn on GREEN led
+
+            //If we put more than 0 characters (everything OK)
+            if (f_puts("First string in my file\n", &fil) > 0) {
+                if (TM_FATFS_DriveSize(&total, &free) == FR_OK) {
+                    //Data for drive size are valid
+                }
+
+            }
+
+            //Close file, don't forget this!
+            f_close(&fil);
+        }
+
+        //Unmount drive, don't forget this!
+        f_mount(0, "", 1);
+    }
+
+
+
+
+
 	// Main loop
 	 while (1) {
 

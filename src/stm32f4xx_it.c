@@ -65,6 +65,7 @@
 #include "irlink.h"
 #include "motor.h"
 #include "rc.h"
+#include "delay.h"
 
 extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -169,6 +170,7 @@ void PendSV_Handler(void) {
  */
 void SysTick_Handler(void) {
 	HAL_IncTick();
+	DELAY_1msTask();
 	mytick++;
 }
 

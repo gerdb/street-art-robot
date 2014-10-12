@@ -1,8 +1,8 @@
 /**
  *  Project     StreetArtRobot
- *  @file		gyro.c
+ *  @file		sdcard.c
  *  @author		Gerd Bartelt - www.sebulli.com
- *  @brief		gyro sensor
+ *  @brief		SDCard SPI
  *
  *  @copyright	GPL3
  *
@@ -21,14 +21,12 @@
  *
  */
 /* Includes ------------------------------------------------------------------*/
-#include "gyro.h"
+#include "sdcard.h"
 
-uint32_t SpiTimeout = GYRO_SPI_TIMEOUT_MAX; // Value of Timeout when SPI communication fails
+uint32_t SDCardSpiTimeout = SDCARD_SPI_TIMEOUT_MAX; // Value of Timeout when SPI communication fails
 
-static SPI_HandleTypeDef GyroSpiHandle;
-
-static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data);
-static void GYRO_SPI_Error(void);
+static SPI_HandleTypeDef SDCardSpiHandle;
+static void SDCARD_SPI_Error(void);
 
 /******************************************************************************
  BUS OPERATIONS
@@ -40,57 +38,47 @@ static void GYRO_SPI_Error(void);
  * @param  None
  * @retval None
  */
-void GYRO_Init(void) {
-	if (HAL_SPI_GetState(&GyroSpiHandle) == HAL_SPI_STATE_RESET) {
+void SDCARD_Init(void) {
+	if (HAL_SPI_GetState(&SDCardSpiHandle) == HAL_SPI_STATE_RESET) {
 		/* SPI configuration -------------------------------------------------------*/
-		GyroSpiHandle.Instance = GYRO_SPI;
-		GyroSpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-		GyroSpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
-		GyroSpiHandle.Init.CLKPhase = SPI_PHASE_2EDGE;
-		GyroSpiHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
-		GyroSpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-		GyroSpiHandle.Init.CRCPolynomial = 7;
-		GyroSpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
-		GyroSpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
-		GyroSpiHandle.Init.NSS = SPI_NSS_SOFT;
-		GyroSpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
-		GyroSpiHandle.Init.Mode = SPI_MODE_MASTER;
+		SDCardSpiHandle.Instance = SDCARD_SPI;
+		SDCardSpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+		SDCardSpiHandle.Init.Direction = SPI_DIRECTION_2LINES;
+		SDCardSpiHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
+		SDCardSpiHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
+		SDCardSpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+		SDCardSpiHandle.Init.CRCPolynomial = 7;
+		SDCardSpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
+		SDCardSpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+		SDCardSpiHandle.Init.NSS = SPI_NSS_SOFT;
+		SDCardSpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
+		SDCardSpiHandle.Init.Mode = SPI_MODE_MASTER;
 
 		GPIO_InitTypeDef GPIO_InitStructure;
 
 		/* Enable the SPI periph */
-		GYRO_SPI_CLK_ENABLE();
+		SDCARD_SPI_CLK_ENABLE();
 
 		/* Enable CS, SCK, MOSI and MISO GPIO clocks */
-		__GPIOA_CLK_ENABLE();
-		__GPIOC_CLK_ENABLE();
+		SDCARD_SPI_GPIO_CLK_ENABLE();
 
 		/* SPI SCK, MOSI, MISO pin configuration */
-		GPIO_InitStructure.Pin = (GYRO_SPI_SCK_PIN | GYRO_SPI_MISO_PIN
-				| GYRO_SPI_MOSI_PIN);
+		GPIO_InitStructure.Pin = (SDCARD_SPI_SCK_PIN
+				| SDCARD_SPI_MISO_PIN | SDCARD_SPI_MOSI_PIN);
 		GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
 		GPIO_InitStructure.Pull = GPIO_PULLDOWN;
 		GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-		GPIO_InitStructure.Alternate = GYRO_SPI_AF;
-		HAL_GPIO_Init(GYRO_SPI_IO_PORT, &GPIO_InitStructure);
+		GPIO_InitStructure.Alternate = SDCARD_SPI_AF;
+		HAL_GPIO_Init(SDCARD_SPI_PORT, &GPIO_InitStructure);
 
-		GPIO_InitStructure.Pin = (GYRO_SPI_CS_PIN);
+		GPIO_InitStructure.Pin = (SDCARD_SPI_CS_PIN);
 		GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
 		GPIO_InitStructure.Pull = GPIO_PULLDOWN;
 		GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
-		HAL_GPIO_Init(GYRO_SPI_CS_PORT, &GPIO_InitStructure);
+		HAL_GPIO_Init(SDCARD_SPI_PORT, &GPIO_InitStructure);
 
-		HAL_SPI_Init(&GyroSpiHandle);
+		HAL_SPI_Init(&SDCardSpiHandle);
 	}
-}
-
-/**
- * @brief  Gets the Gyro angle as integer
- * @param  none.
- * @retval The angle from 0 to 9827
- */
-uint16_t GYRO_GetAngle(void) {
-	return GYRO_SPI_WriteRead(GYRO_ANGL_OUT, 0) & 0x3FFF;
 }
 
 /**
@@ -99,23 +87,31 @@ uint16_t GYRO_GetAngle(void) {
  * @param  Byte : Byte send.
  * @retval The received byte value
  */
-static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data) {
-	uint8_t txbytes[2];
-	uint8_t rxbytes[2];
-	uint16_t retval;
-
-	txbytes[0] = address;
-	txbytes[1] = data;
+uint8_t SDCARD_SPI_WriteRead(uint8_t data) {
+	uint8_t retval;
 
 	// Send the 2 bytes and receive 2 bytes
-	HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, RESET);
-	if (HAL_SPI_TransmitReceive(&GyroSpiHandle, (uint8_t*) &txbytes,
-			(uint8_t*) rxbytes, 2, SpiTimeout) != HAL_OK) {
-		GYRO_SPI_Error();
+	//HAL_GPIO_WritePin(SDCARD_SPI_PORT, SDCARD_SPI_CS_PIN, RESET);
+	if (HAL_SPI_TransmitReceive(&SDCardSpiHandle, (uint8_t*) &data,
+			(uint8_t*) &retval, 1, SDCardSpiTimeout) != HAL_OK) {
+		SDCARD_SPI_Error();
 	}
-	HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, SET);
-	retval = ((uint16_t) rxbytes[0] << 8) | rxbytes[1];
+	//HAL_GPIO_WritePin(SDCARD_SPI_PORT, SDCARD_SPI_CS_PIN, SET);
 	return retval;
+}
+
+void SDCARD_SPI_WriteMulti(uint8_t *dataOut, uint16_t count) {
+	uint16_t i;
+	for (i = 0; i < count; i++) {
+		SDCARD_SPI_WriteRead(dataOut[i]);
+	}
+}
+
+void SDCARD_SPI_ReadMulti(uint8_t *dataIn, uint8_t dummy, uint16_t count) {
+	uint16_t i;
+	for (i = 0; i < count; i++) {
+		dataIn[i] = SDCARD_SPI_WriteRead(dummy);
+	}
 }
 
 /**
@@ -123,11 +119,11 @@ static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data) {
  * @param None
  * @retval None
  */
-static void GYRO_SPI_Error(void) {
+static void SDCARD_SPI_Error(void) {
 	/* De-initialize the SPI comunication bus */
-	HAL_SPI_DeInit(&GyroSpiHandle);
+	HAL_SPI_DeInit(&SDCardSpiHandle);
 
 	/* Re-Initiaize the SPI comunication bus */
-	//GYRO_Init();
+	//SCARD_Init();
 }
 
