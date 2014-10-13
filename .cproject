@@ -32,9 +32,24 @@
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/STM32F4xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs/drivers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/main}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/usart}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/rc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/switch}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/servo}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/sdcard}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/power}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/oled}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/motor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/led}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/irlink}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/gyro}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/delay}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
 								</option>
 								<option id="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def.1984846100" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32F407xx"/>
@@ -48,9 +63,24 @@
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/STM32F4xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs/drivers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/main}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/usart}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/delay}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/irlink}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/rc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/switch}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/servo}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/sdcard}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/power}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/oled}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/motor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/led}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/gyro}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
 								</option>
 								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def.2065987590" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32F407xx"/>
@@ -76,8 +106,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="inc|FatFs|HalDriver|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
+						<entry excluding="FatFs|HalDriver|src" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -109,6 +138,25 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/delay}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/gyro}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/irlink}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/led}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/motor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/oled}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/power}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/sdcard}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/servo}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/switch}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/usart}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/system}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/main}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/rc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
 								</option>
 								<inputType id="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.assembler.base.input.454133387" superClass="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.assembler.base.input"/>
 							</tool>
@@ -118,6 +166,25 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/delay}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/gyro}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/irlink}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/led}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/motor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/oled}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/power}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/sdcard}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/servo}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/switch}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/usart}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/system}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/main}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/rc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
 								</option>
 								<inputType id="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.c.compiler.base.input.789623474" superClass="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.c.compiler.base.input"/>
 							</tool>
