@@ -50,7 +50,7 @@ void GYRO_Init(void) {
 		GyroSpiHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
 		GyroSpiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
 		GyroSpiHandle.Init.CRCPolynomial = 7;
-		GyroSpiHandle.Init.DataSize = SPI_DATASIZE_8BIT;
+		GyroSpiHandle.Init.DataSize = SPI_DATASIZE_16BIT;
 		GyroSpiHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
 		GyroSpiHandle.Init.NSS = SPI_NSS_SOFT;
 		GyroSpiHandle.Init.TIMode = SPI_TIMODE_DISABLED;
@@ -96,25 +96,24 @@ uint16_t GYRO_GetAngle(void) {
 /**
  * @brief  Sends a Byte through the SPI interface and return the Byte received
  *         from the SPI bus.
- * @param  Byte : Byte send.
- * @retval The received byte value
+ * @param  address : the address byte
+ * @param  address : the data byte
+ * @retval The received word value
  */
 static uint16_t GYRO_SPI_WriteRead(uint8_t address, uint8_t data) {
 	uint8_t txbytes[2];
-	uint8_t rxbytes[2];
 	uint16_t retval;
 
-	txbytes[0] = address;
-	txbytes[1] = data;
+	txbytes[1] = address;
+	txbytes[0] = data;
 
 	// Send the 2 bytes and receive 2 bytes
 	HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, RESET);
 	if (HAL_SPI_TransmitReceive(&GyroSpiHandle, (uint8_t*) &txbytes,
-			(uint8_t*) rxbytes, 2, SpiTimeout) != HAL_OK) {
+			(uint8_t*) &retval, 1, SpiTimeout) != HAL_OK) {
 		GYRO_SPI_Error();
 	}
 	HAL_GPIO_WritePin(GYRO_SPI_CS_PORT, GYRO_SPI_CS_PIN, SET);
-	retval = ((uint16_t) rxbytes[0] << 8) | rxbytes[1];
 	return retval;
 }
 
