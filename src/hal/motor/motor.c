@@ -48,7 +48,8 @@ TIM_IC_InitTypeDef sConfigEncSpeed;
 TIM_OC_InitTypeDef sConfigTimMotor;
 TIM_OC_InitTypeDef sConfigTimPump;
 
-uint16_t motorHallPeriode[4] = {0,0,0,0};
+uint16_t motorHallPeriode[2] = {0xFFFF,0xFFFF};
+uint32_t motorHallTimoutCnt[2] = {10000,10000};
 uint16_t motorHallLastCapVal[4] = {0,0,0,0};
 
 /* Timer handler declaration */
@@ -257,6 +258,18 @@ void MOTOR_Init(void) {
 }
 
 /**
+ * @brief  1ms Task
+ * @param  None
+ * @retval None
+ */
+void MOTOR_1msTask(void) {
+	if (motorHallTimoutCnt[0] < 10000)
+		motorHallTimoutCnt[0] ++;
+	if (motorHallTimoutCnt[1] < 10000)
+		motorHallTimoutCnt[1] ++;
+}
+
+/**
  * @brief  Sets the motor with a new value
  * @param  motorNr number of the motor
  * @param  value motor value from -255 to +255
@@ -312,6 +325,36 @@ void MOTOR_SetVal(int motorNr, int value, uint8_t current) {
 
 }
 
+/**
+  * @brief  Returns the speed of the selected motor
+  * @param  motorNr number of the motor
+  * @retval the speed
+  */
+int MOTOR_GetSpeed(int motorNr){
+	int period,period_icap, period_taskcnt;
+	int speed;
+	int ix = motorNr-MOTOR_M1;
+
+	// use the period based on the input capture
+	period_icap = motorHallPeriode[ix];
+	// and the period based on the counter in the 1ms task
+	period_taskcnt = motorHallTimoutCnt[ix]*200;
+
+	// return the largest one
+	if (period_taskcnt > period_icap)
+		period = period_taskcnt;
+	else
+		period = period_icap;
+
+	// Speed (frequency) is the inverse value of period time
+	// Prevent division by zero
+	if (period == 0)
+		period = 1;
+	speed = (200*10000) / period;
+
+	return speed;
+
+}
 
 /**
   * @brief  Conversion complete callback in non blocking mode
@@ -323,22 +366,26 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	uint16_t captureVal;
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		motorHallTimoutCnt[0] = 0;
 		motorHallPeriode[0] = captureVal - motorHallLastCapVal[0];
 		motorHallLastCapVal[0] = captureVal;
 	}
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
-		motorHallPeriode[1] = captureVal - motorHallLastCapVal[1];
+		motorHallTimoutCnt[0] = 0;
+		motorHallPeriode[0] = captureVal - motorHallLastCapVal[1];
 		motorHallLastCapVal[1] = captureVal;
 	}
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
-		motorHallPeriode[2] = captureVal - motorHallLastCapVal[2];
+		motorHallTimoutCnt[1] = 0;
+		motorHallPeriode[1] = captureVal - motorHallLastCapVal[2];
 		motorHallLastCapVal[2] = captureVal;
 	}
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
-		motorHallPeriode[3] = captureVal - motorHallLastCapVal[3];
+		motorHallTimoutCnt[1] = 0;
+		motorHallPeriode[1] = captureVal - motorHallLastCapVal[3];
 		motorHallLastCapVal[3] = captureVal;
 	}
 

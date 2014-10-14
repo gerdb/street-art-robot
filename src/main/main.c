@@ -134,7 +134,7 @@ int main(void) {
 		SWITCH_Task();
 
 		if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
-			MOTOR_SetVal(MOTOR_M1, 800, 255);
+			MOTOR_SetVal(MOTOR_M1, 400, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
 			MOTOR_SetVal(MOTOR_M1, 0, 255);
@@ -143,18 +143,23 @@ int main(void) {
 			MOTOR_SetVal(MOTOR_M1, -800, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
-			MOTOR_SetVal(MOTOR_M1, 2100, 255);
+			MOTOR_SetVal(MOTOR_M1, 4200, 255);
 		}
 		// Debug ports
 		USARTL1_RxBufferTask();
 
 		//i = TIM8->CCR1;
-		//sprintf (txt,"%5u", (unsigned int)motorHallPeriode[1]);
 		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
 		//sprintf (txt,"%5u", (unsigned int)IRperiode);
-		sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
+		//sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
+		sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M1));
+		OLED_Print(0, 0, OLED_SIZE_SMALL, txt);
 
-		OLED_Print(0, 0, OLED_SIZE_LARGE, txt);
+		sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M2));
+		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
+
+
+
 		OLED_Display();
 
 
