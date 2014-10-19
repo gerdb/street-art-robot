@@ -152,10 +152,12 @@ int main(void) {
 		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
 		//sprintf (txt,"%5u", (unsigned int)IRperiode);
 		//sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
-		sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M1));
+		//sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M1));
+		sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M1));
+
 		OLED_Print(0, 0, OLED_SIZE_SMALL, txt);
 
-		sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M2));
+		sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M2));
 		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
 
 

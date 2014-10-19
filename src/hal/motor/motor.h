@@ -102,6 +102,7 @@
 /* global variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htimEncSpeed;
 extern uint16_t motorHallPeriode[2];
+extern signed int motorHallSign[2];
 extern uint32_t motorHallTimoutCnt[2];
 extern TIM_HandleTypeDef htimPump; // Timer1 is shared together with the IRLINK module
 
@@ -109,5 +110,6 @@ extern TIM_HandleTypeDef htimPump; // Timer1 is shared together with the IRLINK 
 void MOTOR_Init(void);
 void MOTOR_SetVal(int motorNr, int value, uint8_t current);
 void MOTOR_1msTask(void);
+int MOTOR_GetSpeed(int motorNr);
 
 #endif // __MOTOR_H

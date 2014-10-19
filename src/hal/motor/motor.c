@@ -48,7 +48,8 @@ TIM_IC_InitTypeDef sConfigEncSpeed;
 TIM_OC_InitTypeDef sConfigTimMotor;
 TIM_OC_InitTypeDef sConfigTimPump;
 
-uint16_t motorHallPeriode[2] = {0xFFFF,0xFFFF};
+uint16_t motorHallPeriode[2] = {0x7FFF,0x7FFF};
+signed int motorHallSign[2] = {1,1};
 uint32_t motorHallTimoutCnt[2] = {10000,10000};
 uint16_t motorHallLastCapVal[4] = {0,0,0,0};
 
@@ -334,6 +335,8 @@ int MOTOR_GetSpeed(int motorNr){
 	int period,period_icap, period_taskcnt;
 	int speed;
 	int ix = motorNr-MOTOR_M1;
+	uint16_t tim_cnt = 0;
+	static uint16_t tim_cnt_old[2] = {0,0};
 
 	// use the period based on the input capture
 	period_icap = motorHallPeriode[ix];
@@ -352,7 +355,24 @@ int MOTOR_GetSpeed(int motorNr){
 		period = 1;
 	speed = (200*10000) / period;
 
-	return speed;
+	// Get the direction from the encoder values
+	if (motorNr == MOTOR_M1)
+		tim_cnt = TIM3->CNT;
+	if (motorNr == MOTOR_M2)
+		tim_cnt = TIM4->CNT;
+
+	if (tim_cnt > tim_cnt_old[ix])
+		motorHallSign[ix] = +1;
+	if (tim_cnt < tim_cnt_old[ix])
+		motorHallSign[ix] = -1;
+	tim_cnt_old[ix] = tim_cnt;
+
+
+	// Return a positive or negative speed value
+	if (motorHallSign[ix] > 0)
+		return speed;
+	else
+		return -speed;
 
 }
 
@@ -364,6 +384,8 @@ int MOTOR_GetSpeed(int motorNr){
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 	uint16_t captureVal;
+
+
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 		motorHallTimoutCnt[0] = 0;
@@ -385,8 +407,12 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
 		captureVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
 		motorHallTimoutCnt[1] = 0;
-		motorHallPeriode[1] = captureVal - motorHallLastCapVal[3];
+		motorHallPeriode[1] =  captureVal - motorHallLastCapVal[3];
 		motorHallLastCapVal[3] = captureVal;
 	}
 
+
+
+
 }
+
