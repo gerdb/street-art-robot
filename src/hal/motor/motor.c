@@ -116,7 +116,7 @@ void MOTOR_Init(void) {
 
     // Timer configuration for motor pwm
 	htimMotor.Instance = MOTOR_PWM_TIMER;
-	htimMotor.Init.Period = 4200 - 1; // = 20kHz = 84MHz / 1 / 4200
+	htimMotor.Init.Period = MOTOR_MAX - 1; // = 20kHz = 84MHz / 1 / 4200
 	htimMotor.Init.Prescaler = 1-1;
 	htimMotor.Init.ClockDivision = 1;
 	htimMotor.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -124,7 +124,7 @@ void MOTOR_Init(void) {
 
     // Timer configuration for pump
 	htimPump.Instance = PUMP_PWM_TIMER;
-	htimPump.Init.Period = 4200 - 1; // = 20kHz = 168MHz / 2 / 4200
+	htimPump.Init.Period = MOTOR_MAX - 1; // = 20kHz = 168MHz / 2 / 4200
 	htimPump.Init.Prescaler = 2-1;
 	htimPump.Init.ClockDivision = 1;
 	htimPump.Init.CounterMode = TIM_COUNTERMODE_UP;

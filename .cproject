@@ -50,6 +50,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/controller}&quot;"/>
 								</option>
 								<option id="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def.1984846100" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.assembler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32F407xx"/>
@@ -81,6 +82,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/controller}&quot;"/>
 								</option>
 								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def.2065987590" name="Defined symbols (-D)" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32F407xx"/>
@@ -157,6 +159,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/controller}&quot;"/>
 								</option>
 								<inputType id="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.assembler.base.input.454133387" superClass="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.assembler.base.input"/>
 							</tool>
@@ -185,6 +188,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/fatfs/drivers}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/printf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/middleware/controller}&quot;"/>
 								</option>
 								<inputType id="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.c.compiler.base.input.789623474" superClass="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.c.compiler.base.input"/>
 							</tool>

@@ -30,6 +30,8 @@
 
 /* defines ------------------------------------------------------------------*/
 
+#define MOTOR_MAX 4200
+
 // Clocks
 #define MOTOR_PWM_CLK_ENABLE()			__GPIOA_CLK_ENABLE()
 #define MOTOR_CURR_CLK_ENABLE()			__GPIOE_CLK_ENABLE()

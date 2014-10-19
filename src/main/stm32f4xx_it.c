@@ -66,6 +66,7 @@
 #include "motor.h"
 #include "rc.h"
 #include "delay.h"
+#include "controller.h"
 
 extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -172,6 +173,7 @@ void SysTick_Handler(void) {
 	HAL_IncTick();
 	DELAY_1msTask();
 	MOTOR_1msTask();
+	CONTROLLER_1msTask();
 	mytick++;
 }
 

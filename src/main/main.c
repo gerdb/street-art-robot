@@ -33,8 +33,10 @@
 #include "rc.h"
 #include "irlink.h"
 #include "gyro.h"
+#include "delay.h"
 #include "sdcard.h"
 #include "tm_stm32f4_fatfs.h"
+#include "controller.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -75,10 +77,12 @@ int main(void) {
 	POWER_Init();	// power module
 	IRLINK_Init();	// IR link
 	GYRO_Init();	// Gyro sensor
+	DELAY_Init();	// Time delay (for SD card)
 	SDCARD_Init();	// SD card
-    //TM_DELAY_Init();
+	CONTROLLER_Init();	// Motor speed controller
 
 
+	// Clear the display
 	OLED_Clr();
 
 
@@ -134,16 +138,20 @@ int main(void) {
 		SWITCH_Task();
 
 		if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
-			MOTOR_SetVal(MOTOR_M1, 400, 255);
+			controller_speed_enable[0] = 1;
+			controller_speed_enable[1] = 1;
+			//MOTOR_SetVal(MOTOR_M1, 400, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
-			MOTOR_SetVal(MOTOR_M1, 0, 255);
+			controller_speed_enable[0] = 0;
+			controller_speed_enable[1] = 0;
+			//MOTOR_SetVal(MOTOR_M1, 0, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_UP)) {
-			MOTOR_SetVal(MOTOR_M1, -800, 255);
+			//MOTOR_SetVal(MOTOR_M1, -800, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
-			MOTOR_SetVal(MOTOR_M1, 4200, 255);
+			//MOTOR_SetVal(MOTOR_M1, 4200, 255);
 		}
 		// Debug ports
 		USARTL1_RxBufferTask();

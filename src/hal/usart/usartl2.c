@@ -23,7 +23,7 @@
 
 /* Includes -----------------------------------------------------------------*/
 #include "usartl2.h"
-
+#include "controller.h"
 
 /* local variables ----------------------------------------------------------*/
 enDecodeState decodeState;
@@ -101,6 +101,11 @@ void USARTL2_Decode(char c) {
 			}
 			my_printf("\r\n>");
 		}
+		if ((c == 'p') || (c == 'i'))  {
+			decodeState = DECODE_DATA;
+			decodePos = 0;
+			decodeData = 0;
+		}
 
 		if (c == 'd') {
 			debug_on = 0;
@@ -108,6 +113,11 @@ void USARTL2_Decode(char c) {
 		if (c == 'D') {
 			debug_on = 1;
 		}
+		if ((c >= '0') && (c <= '9')) {
+			controller_speed_setpoint[0] = +(c-'0')*4200/9;
+			controller_speed_setpoint[1] = -(c-'0')*4200/9;
+		}
+
 		break;
 	case DECODE_ADDRESS:
 		if (c == ' ') {
@@ -125,6 +135,14 @@ void USARTL2_Decode(char c) {
 		my_printf("\n");
 		if (decodeAddress < 65536) {
 			if (decodeData < 65536) {
+				switch (decodeCmd) {
+				case 'p':
+					controller_speed_kp = decodeData;
+					break;
+				case 'i':
+					controller_speed_ki = decodeData;
+					break;
+				}
 			}
 			else {
 				my_printf("Data out of range");
