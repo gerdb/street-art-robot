@@ -31,10 +31,11 @@
 /* defines ------------------------------------------------------------------*/
 
 /* global variables ------------------------------------------------------------------*/
-extern int controller_speed_enable[2];
-extern int controller_speed_setpoint[2];
-extern int controller_speed_ki;
-extern int controller_speed_kp;
+extern int controller_enable[2];
+extern int controller_setpoint[2];
+extern int controller_ki;
+extern int controller_kp;
+extern int controller_kd;
 
 /* Function Prototypes --------------------------------------------------------*/
 void CONTROLLER_Init(void);

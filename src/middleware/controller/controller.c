@@ -27,9 +27,9 @@
 #include "motor.h"
 
 /* local variables ----------------------------------------------------------*/
-int controller_speed_i[2] = {0,0};
-int controller_speed_limit_neg[2] = {0,0};
-int controller_speed_limit_pos[2] = {0,0};
+int controller_I[2] = {0,0};
+int controller_limit_neg[2] = {0,0};
+int controller_limit_pos[2] = {0,0};
 int initialized = 0;
 
 /* local functions ----------------------------------------------------------*/
@@ -37,10 +37,10 @@ int initialized = 0;
 
 
 /* global variables ----------------------------------------------------------*/
-int controller_speed_enable[2] = {0,0};
-int controller_speed_setpoint[2] = {800,-800};
-int controller_speed_ki = 32;
-int controller_speed_kp = 32;
+int controller_enable[2] = {0,0};
+int controller_setpoint[2] = {200,200};
+int controller_ki = 0;
+int controller_kp = 4000;
 
 /**
  * @brief  Configures the speed controller
@@ -62,44 +62,58 @@ void CONTROLLER_1msTask(void) {
 	int diff;
 	int sum;
 
+	static int test_10msTaskCnt = 0;
+
+	test_10msTaskCnt++;
+	if (test_10msTaskCnt >= 10) {
+		test_10msTaskCnt = 0;
+	}
+	controller_setpoint[0]+=1;
+
+
+
 	// Wait until controller is initialized
 	if (!initialized)
 		return;
 
 	for (i=0; i<2 ; i++) {
-		diff = controller_speed_setpoint[i] - MOTOR_GetSpeed(i + MOTOR_M1);
+		diff = controller_setpoint[i] - TIM3->CNT ;//MOTOR_GetSpeed(i + MOTOR_M1);
+
+		diff = (int16_t)diff;
 
 		// I-part with limitation
-		if ((diff>0 && !controller_speed_limit_pos[i]) ||
-			(diff<0 && !controller_speed_limit_neg[i]))
-			controller_speed_i[i] += controller_speed_ki * diff;
+		if ((diff>0 && !controller_limit_pos[i]) ||
+			(diff<0 && !controller_limit_neg[i]))
+			controller_I[i] += controller_ki * diff;
 
 		// P and I part
-		sum = controller_speed_i[i] / 1024  + (controller_speed_kp * diff) / 32;
+		sum = controller_I[i] / 1024  + (controller_kp * diff) / 32;
 
 		// Limit output
 		if (sum > MOTOR_MAX) {
 			sum = MOTOR_MAX;
-			controller_speed_limit_pos[i] = 1;
+			controller_limit_pos[i] = 1;
 		}
 		else {
-			controller_speed_limit_pos[i] = 0;
+			controller_limit_pos[i] = 0;
 		}
 
 		if (sum < -MOTOR_MAX) {
 			sum = -MOTOR_MAX;
-			controller_speed_limit_neg[i] = 1;
+			controller_limit_neg[i] = 1;
 		}
 		else {
-			controller_speed_limit_neg[i] = 0;
+			controller_limit_neg[i] = 0;
 		}
 
+//		MOTOR_SetVal(MOTOR_M1 + i, MOTOR_MAX / 2, 255);
+
 		// Set the motor PWM
-		if (controller_speed_enable[i]) {
+		if (controller_enable[i]) {
 			MOTOR_SetVal(MOTOR_M1 + i, sum, 255);
 		} else {
 			MOTOR_SetVal(MOTOR_M1 + i, 0, 255);
-			controller_speed_i[i] = 0;
+			controller_I[i] = 0;
 		}
 
 	}

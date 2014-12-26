@@ -114,8 +114,8 @@ void USARTL2_Decode(char c) {
 			debug_on = 1;
 		}
 		if ((c >= '0') && (c <= '9')) {
-			controller_speed_setpoint[0] = +(c-'0')*4200/9;
-			controller_speed_setpoint[1] = -(c-'0')*4200/9;
+			controller_setpoint[0] = +(c-'0')*1000/9;
+			controller_setpoint[1] = -(c-'0')*1000/9;
 		}
 
 		break;
@@ -137,10 +137,10 @@ void USARTL2_Decode(char c) {
 			if (decodeData < 65536) {
 				switch (decodeCmd) {
 				case 'p':
-					controller_speed_kp = decodeData;
+					controller_kp = decodeData;
 					break;
 				case 'i':
-					controller_speed_ki = decodeData;
+					controller_ki = decodeData;
 					break;
 				}
 			}

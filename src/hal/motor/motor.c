@@ -229,7 +229,7 @@ void MOTOR_Init(void) {
     // Timer configuration for input capture
     htimEncSpeed.Instance = MOTOR_HALL_SPEED_TIMER;
     htimEncSpeed.Init.Period = 0xFFFF;
-    htimEncSpeed.Init.Prescaler = 840-1; // 10us
+    htimEncSpeed.Init.Prescaler = 84-1; // 10us
     htimEncSpeed.Init.ClockDivision = 0;
     htimEncSpeed.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_IC_Init(&htimEncSpeed);
@@ -339,9 +339,9 @@ int MOTOR_GetSpeed(int motorNr){
 	static uint16_t tim_cnt_old[2] = {0,0};
 
 	// use the period based on the input capture
-	period_icap = motorHallPeriode[ix];
+	period_icap = 0; //motorHallPeriode[ix];
 	// and the period based on the counter in the 1ms task
-	period_taskcnt = motorHallTimoutCnt[ix]*200;
+	period_taskcnt = motorHallTimoutCnt[ix]*20;
 
 	// return the largest one
 	if (period_taskcnt > period_icap)
