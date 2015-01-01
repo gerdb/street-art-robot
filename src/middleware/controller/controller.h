@@ -32,7 +32,7 @@
 
 /* global variables ------------------------------------------------------------------*/
 extern int controller_enable[2];
-extern int controller_setpoint[2];
+extern int controller_pos[2];
 extern int controller_ki;
 extern int controller_kp;
 extern int controller_kd;

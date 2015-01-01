@@ -38,7 +38,7 @@ int initialized = 0;
 
 /* global variables ----------------------------------------------------------*/
 int controller_enable[2] = {0,0};
-int controller_setpoint[2] = {200,200};
+int controller_pos[2] = {0,0};
 int controller_ki = 0;
 int controller_kp = 4000;
 
@@ -67,17 +67,23 @@ void CONTROLLER_1msTask(void) {
 	test_10msTaskCnt++;
 	if (test_10msTaskCnt >= 10) {
 		test_10msTaskCnt = 0;
+
 	}
-	controller_setpoint[0]+=1;
 
-
+	controller_pos[0]+=1;
+	controller_pos[1]-=1;
 
 	// Wait until controller is initialized
 	if (!initialized)
 		return;
 
 	for (i=0; i<2 ; i++) {
-		diff = controller_setpoint[i] - TIM3->CNT ;//MOTOR_GetSpeed(i + MOTOR_M1);
+
+		// Get the direction from the encoder values
+		if (i == 0)
+			diff = controller_pos[i]/8 - TIM3->CNT;
+		if (i == 1)
+			diff = controller_pos[i]/8 - TIM4->CNT;
 
 		diff = (int16_t)diff;
 

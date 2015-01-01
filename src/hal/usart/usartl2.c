@@ -114,8 +114,8 @@ void USARTL2_Decode(char c) {
 			debug_on = 1;
 		}
 		if ((c >= '0') && (c <= '9')) {
-			controller_setpoint[0] = +(c-'0')*1000/9;
-			controller_setpoint[1] = -(c-'0')*1000/9;
+			controller_pos[0] = +(c-'0')*1000/9;
+			controller_pos[1] = -(c-'0')*1000/9;
 		}
 
 		break;
