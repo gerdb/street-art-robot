@@ -34,5 +34,6 @@
 
 /* Function prototypes -------------------------------------------------------*/
 void Error_Handler(void);
+void Task1ms();
 
 #endif /* __MAIN_H */

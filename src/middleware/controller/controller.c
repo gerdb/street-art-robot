@@ -30,7 +30,9 @@
 int controller_I[2] = {0,0};
 int controller_limit_neg[2] = {0,0};
 int controller_limit_pos[2] = {0,0};
+int controller_pos[2] = {0,0};
 int initialized = 0;
+
 
 /* local functions ----------------------------------------------------------*/
 
@@ -38,7 +40,7 @@ int initialized = 0;
 
 /* global variables ----------------------------------------------------------*/
 int controller_enable[2] = {0,0};
-int controller_pos[2] = {0,0};
+int controller_speed[2] = {10,10};
 int controller_ki = 0;
 int controller_kp = 4000;
 
@@ -49,6 +51,28 @@ int controller_kp = 4000;
  */
 void CONTROLLER_Init(void) {
 	initialized = 1;
+	CONTROLLER_Reset();
+}
+
+/**
+ * @brief  Resets the speed controller
+ * @param  None
+ * @retval None
+ */
+void CONTROLLER_Reset(void) {
+	int i;
+	int sensor_pos = 0;
+
+	for (i=0; i<2 ; i++) {
+
+		// Get the direction from the encoder values
+		if (i == 0)
+			sensor_pos = TIM3->CNT;
+		if (i == 1)
+			sensor_pos = TIM4->CNT;
+
+		controller_pos[i] = sensor_pos * 16 ;
+	}
 }
 
 /**
@@ -61,17 +85,10 @@ void CONTROLLER_1msTask(void) {
 	int i;
 	int diff;
 	int sum;
+	int sensor_pos = 0;
 
-	static int test_10msTaskCnt = 0;
-
-	test_10msTaskCnt++;
-	if (test_10msTaskCnt >= 10) {
-		test_10msTaskCnt = 0;
-
-	}
-
-	controller_pos[0]+=1;
-	controller_pos[1]-=1;
+	controller_pos[0]+=controller_speed[0];
+	controller_pos[1]-=controller_speed[1];
 
 	// Wait until controller is initialized
 	if (!initialized)
@@ -81,11 +98,22 @@ void CONTROLLER_1msTask(void) {
 
 		// Get the direction from the encoder values
 		if (i == 0)
-			diff = controller_pos[i]/8 - TIM3->CNT;
+			sensor_pos = TIM3->CNT;
 		if (i == 1)
-			diff = controller_pos[i]/8 - TIM4->CNT;
+			sensor_pos = TIM4->CNT;
 
+		diff = controller_pos[i]/16 - sensor_pos;
 		diff = (int16_t)diff;
+
+		// Limit the difference
+		if (diff > CONTROLLER_MAX_DIFF) {
+			diff = CONTROLLER_MAX_DIFF;
+			controller_pos[i] = (diff + sensor_pos) * 16 ;
+		}
+		if (diff < -CONTROLLER_MAX_DIFF) {
+			diff = -CONTROLLER_MAX_DIFF;
+			controller_pos[i] = (diff + sensor_pos) * 16 ;
+		}
 
 		// I-part with limitation
 		if ((diff>0 && !controller_limit_pos[i]) ||
@@ -126,3 +154,15 @@ void CONTROLLER_1msTask(void) {
 
 }
 
+/**
+ * @brief  Enabled/ disabled the motor controller
+ * @param  enabled true, if controller should be enabled
+ * @retval None
+ */
+void CONTROLLER_Enable(int enabled) {
+	int i;
+	for (i=0; i<2; i++) {
+		controller_enable[i] = enabled;
+		MOTOR_SetVal(MOTOR_M1 + i, 0, 255);
+	}
+}

@@ -29,10 +29,10 @@
 #include "stm32f4xx_hal.h"
 
 /* defines ------------------------------------------------------------------*/
+#define CONTROLLER_MAX_DIFF 100
+
 
 /* global variables ------------------------------------------------------------------*/
-extern int controller_enable[2];
-extern int controller_pos[2];
 extern int controller_ki;
 extern int controller_kp;
 extern int controller_kd;
@@ -40,5 +40,7 @@ extern int controller_kd;
 /* Function Prototypes --------------------------------------------------------*/
 void CONTROLLER_Init(void);
 void CONTROLLER_1msTask(void);
+void CONTROLLER_Reset(void);
+void CONTROLLER_Enable(int enabled);
 
 #endif // CONTROLLER_H

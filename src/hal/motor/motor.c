@@ -42,16 +42,19 @@ TIM_HandleTypeDef htimMotor;
 TIM_HandleTypeDef htimPump;
 TIM_HandleTypeDef htimEncM1;
 TIM_HandleTypeDef htimEncM2;
-TIM_HandleTypeDef htimEncSpeed;
 TIM_Encoder_InitTypeDef sConfigEncM;
-TIM_IC_InitTypeDef sConfigEncSpeed;
 TIM_OC_InitTypeDef sConfigTimMotor;
 TIM_OC_InitTypeDef sConfigTimPump;
 
+#ifdef MOTOR_MEASURE_SPEED
+TIM_HandleTypeDef htimEncSpeed;
+TIM_IC_InitTypeDef sConfigEncSpeed;
 uint16_t motorHallPeriode[2] = {0x7FFF,0x7FFF};
 signed int motorHallSign[2] = {1,1};
 uint32_t motorHallTimoutCnt[2] = {10000,10000};
 uint16_t motorHallLastCapVal[4] = {0,0,0,0};
+#endif
+
 
 /* Timer handler declaration */
 TIM_HandleTypeDef    TimHandle;
@@ -225,6 +228,7 @@ void MOTOR_Init(void) {
     HAL_TIM_Encoder_Start(&htimEncM2, TIM_CHANNEL_1);
     HAL_TIM_Encoder_Start(&htimEncM2, TIM_CHANNEL_2);
 
+#ifdef MOTOR_MEASURE_SPEED
 
     // Timer configuration for input capture
     htimEncSpeed.Instance = MOTOR_HALL_SPEED_TIMER;
@@ -255,6 +259,7 @@ void MOTOR_Init(void) {
     HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_2);
     HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_3);
     HAL_TIM_IC_Start_IT(&htimEncSpeed, TIM_CHANNEL_4);
+#endif //MOTOR_MEASURE_SPEED
 
 }
 
@@ -264,10 +269,12 @@ void MOTOR_Init(void) {
  * @retval None
  */
 void MOTOR_1msTask(void) {
+#ifdef MOTOR_MEASURE_SPEED
 	if (motorHallTimoutCnt[0] < 10000)
 		motorHallTimoutCnt[0] ++;
 	if (motorHallTimoutCnt[1] < 10000)
 		motorHallTimoutCnt[1] ++;
+#endif
 }
 
 /**
@@ -326,6 +333,7 @@ void MOTOR_SetVal(int motorNr, int value, uint8_t current) {
 
 }
 
+#ifdef MOTOR_MEASURE_SPEED
 /**
   * @brief  Returns the speed of the selected motor
   * @param  motorNr number of the motor
@@ -376,6 +384,7 @@ int MOTOR_GetSpeed(int motorNr){
 
 }
 
+
 /**
   * @brief  Conversion complete callback in non blocking mode
   * @param  htim: TIM handle
@@ -410,9 +419,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 		motorHallPeriode[1] =  captureVal - motorHallLastCapVal[3];
 		motorHallLastCapVal[3] = captureVal;
 	}
-
-
-
-
 }
+
+#endif //MOTOR_MEASURE_SPEED
 

@@ -60,7 +60,7 @@ void SWITCH_Init(void) {
  * @param  None
  * @retval None
  */
-void SWITCH_Task(void) {
+void SWITCH_1msTask(void) {
 	int i;
 	for (i=0;i<4;i++) {
 		if (HAL_GPIO_ReadPin(SWITCH_PORT, SWITCH_SW1_PIN << i) == GPIO_PIN_SET) {
@@ -99,7 +99,7 @@ int SWITCH_GetState(int switch_nr) {
  * @retval 1, if switch was clicked
  */
 int SWITCH_GetClick(int switch_nr) {
-	int retval = switch_debounced[switch_nr];
-	switch_debounced[switch_nr] = 0;
+	int retval = switch_click[switch_nr];
+	switch_click[switch_nr] = 0;
 	return retval;
 }

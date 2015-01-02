@@ -113,10 +113,10 @@ void USARTL2_Decode(char c) {
 		if (c == 'D') {
 			debug_on = 1;
 		}
-		if ((c >= '0') && (c <= '9')) {
-			controller_pos[0] = +(c-'0')*1000/9;
-			controller_pos[1] = -(c-'0')*1000/9;
-		}
+//		if ((c >= '0') && (c <= '9')) {
+//			controller_pos[0] = +(c-'0')*1000/9;
+//			controller_pos[1] = -(c-'0')*1000/9;
+//		}
 
 		break;
 	case DECODE_ADDRESS:

@@ -65,8 +65,6 @@
 #include "irlink.h"
 #include "motor.h"
 #include "rc.h"
-#include "delay.h"
-#include "controller.h"
 
 extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -171,12 +169,13 @@ void PendSV_Handler(void) {
  */
 void SysTick_Handler(void) {
 	HAL_IncTick();
-	DELAY_1msTask();
-	MOTOR_1msTask();
-	CONTROLLER_1msTask();
 	mytick++;
+
+	Task1ms();
 }
 
+
+#ifdef MOTOR_MEASURE_SPEED
 /**
  * @brief  This function handles TIM8 global interrupt request.
  * @param  None
@@ -184,9 +183,8 @@ void SysTick_Handler(void) {
  */
 void TIM_HALL_SPEED_IRQHandler(void) {
 	HAL_TIM_IRQHandler(&htimEncSpeed);
-
 }
-
+#endif // MOTOR_MEASURE_SPEED
 
 
 /**

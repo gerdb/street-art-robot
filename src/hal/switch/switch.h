@@ -50,11 +50,11 @@
 #define SWITCH_PRESSED 	1
 #define SWITCH_CLICK 	2
 
-#define SWITCH_DEBOUNCE_TIME 10
+#define SWITCH_DEBOUNCE_TIME 50 //ms
 
 /* Function Prototypes --------------------------------------------------------*/
 void SWITCH_Init(void);
-void SWITCH_Task(void);
+void SWITCH_1msTask(void);
 int SWITCH_GetState(int switch_nr);
 int SWITCH_GetClick(int switch_nr);
 

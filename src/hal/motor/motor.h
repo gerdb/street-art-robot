@@ -29,7 +29,7 @@
 #include "stm32f4xx_hal.h"
 
 /* defines ------------------------------------------------------------------*/
-
+//#define MOTOR_MEASURE_SPEED
 #define MOTOR_MAX 4200
 
 // Clocks
@@ -102,16 +102,17 @@
 #define MOTOR_PUMP 	MOTOR_M3
 
 /* global variables --------------------------------------------------------*/
+#ifdef MOTOR_MEASURE_SPEED
 extern TIM_HandleTypeDef htimEncSpeed;
-extern uint16_t motorHallPeriode[2];
-extern signed int motorHallSign[2];
-extern uint32_t motorHallTimoutCnt[2];
+#endif
 extern TIM_HandleTypeDef htimPump; // Timer1 is shared together with the IRLINK module
 
 /* Function Prototypes --------------------------------------------------------*/
 void MOTOR_Init(void);
 void MOTOR_SetVal(int motorNr, int value, uint8_t current);
 void MOTOR_1msTask(void);
+#ifdef MOTOR_MEASURE_SPEED
 int MOTOR_GetSpeed(int motorNr);
+#endif
 
 #endif // __MOTOR_H

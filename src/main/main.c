@@ -135,31 +135,21 @@ int main(void) {
 			POWER_Task();
 		}
 
-		SWITCH_Task();
 
 		if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
-			controller_enable[0] = 1;
-			controller_enable[1] = 1;
-			controller_pos[0] = 0;
-			controller_pos[1] = 0;
+			CONTROLLER_Reset();
+			CONTROLLER_Enable(1); // Enable the motor controller
 			//MOTOR_SetVal(MOTOR_M1, 400, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
-			controller_enable[0] = 0;
-			controller_enable[1] = 0;
-			controller_pos[0] = 0;
-			controller_pos[1] = 0;
+			CONTROLLER_Enable(0); // Disable the motor controller
 			//MOTOR_SetVal(MOTOR_M1, 0, 255);
 		}
 		if (SWITCH_GetClick(SWITCH_UP)) {
 			//MOTOR_SetVal(MOTOR_M1, -800, 255);
-			controller_pos[0] = 1000;
-			controller_pos[1] = 1000;
 		}
 		if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
 			//MOTOR_SetVal(MOTOR_M1, 4200, 255);
-			controller_pos[0] = 2000;
-			controller_pos[1] = 2000;
 		}
 		// Debug ports
 		USARTL1_RxBufferTask();
@@ -170,12 +160,13 @@ int main(void) {
 		//sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
 		//sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M1));
 		//sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M1));
+		//sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M2));
 		sprintf (txt,"%8d", (signed int)TIM3->CNT);
 
 
 		OLED_Print(0, 0, OLED_SIZE_SMALL, txt);
 
-		sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M2));
+		sprintf (txt,"%8d", 0);
 		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
 
 
@@ -185,6 +176,16 @@ int main(void) {
 
 	}
 
+}
+
+/**
+ * All 1ms Tasks
+ */
+void Task1ms() {
+	DELAY_1msTask();
+	MOTOR_1msTask();
+	CONTROLLER_1msTask();
+	SWITCH_1msTask();
 }
 
 
