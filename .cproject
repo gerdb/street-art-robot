@@ -30,6 +30,7 @@
 							<tool errorParsers="org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser" id="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.elf.assembler.debug.945954417" name="ARM Linux GCC Assembler (Sourcery Lite Bare)" superClass="org.eclipse.cdt.cross.arm.gnu.sourcery.linux.elf.assembler.debug">
 								<option id="org.eclipse.cdt.cross.arm.gnu.assembler.option.include.paths.416121227" name="Include paths (-I)" superClass="org.eclipse.cdt.cross.arm.gnu.assembler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/STM32F4xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/middleware/mvc}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="/home/gerd/Programs/STM32Cube_FW_F4_V1.3.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/main}&quot;"/>
@@ -70,6 +71,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/delay}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/irlink}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/rc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/middleware/mvc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/switch}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/servo}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/street-art-robot/src/hal/sdcard}&quot;"/>

@@ -37,12 +37,11 @@
 #include "sdcard.h"
 #include "tm_stm32f4_fatfs.h"
 #include "controller.h"
+#include "view.h"
+#include "view_controller.h"
 
 /* function prototypes ------------------------------------------------------*/
 void SystemClock_Config(void);
-char txt[20]; // Temporary memory for strings
-int blink = 0;
-int mytick = 0;
 /**
  * @brief  Main program.
  * @param  None
@@ -80,100 +79,50 @@ int main(void) {
 	DELAY_Init();	// Time delay (for SD card)
 	SDCARD_Init();	// SD card
 	CONTROLLER_Init();	// Motor speed controller
-
+	VIEW_Init();	// MVC
+	VIEW_CONTROLLER_Init();	// MVC
 
 	// Clear the display
 	OLED_Clr();
-
-
-
-
-
 
     //Initialize system
     //SystemInit();
     //Initialize delays
 
 
-    //Mount drive
-    if (f_mount(&FatFs, "", 1) == FR_OK) {
-
-
-        //Try to open file
-        if (f_open(&fil, "1stfile.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) == FR_OK) {
-            //File opened, turn off RED and turn on GREEN led
-
-            //If we put more than 0 characters (everything OK)
-            if (f_puts("First string in my file\n", &fil) > 0) {
-                if (TM_FATFS_DriveSize(&total, &free) == FR_OK) {
-                    //Data for drive size are valid
-                }
-
-            }
-
-            //Close file, don't forget this!
-            f_close(&fil);
-        }
-
-        //Unmount drive, don't forget this!
-        f_mount(0, "", 1);
-    }
-
-
+//    //Mount drive
+//    if (f_mount(&FatFs, "", 1) == FR_OK) {
+//
+//
+//        //Try to open file
+//        if (f_open(&fil, "1stfile.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE) == FR_OK) {
+//
+//            //If we put more than 0 characters (everything OK)
+//            if (f_puts("First string in my file\n", &fil) > 0) {
+//                if (TM_FATFS_DriveSize(&total, &free) == FR_OK) {
+//                    //Data for drive size are valid
+//                }
+//
+//            }
+//
+//            //Close file, don't forget this!
+//            f_close(&fil);
+//        }
+//
+//        //Unmount drive, don't forget this!
+//        f_mount(0, "", 1);
+//    }
 
 
 
 	// Main loop
 	 while (1) {
+		USARTL1_RxBufferTask(); // Debug ports
+		POWER_Task(); // Check for low power
+		GYRO_Task(); // Do the self test
 
-		// Generate a blink flag
-		if (mytick > 200) {
-			mytick = 0;
-			blink = !blink;
-
-			//200ms Task
-			POWER_Task();
-		}
-
-
-		if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
-			CONTROLLER_Reset();
-			CONTROLLER_Enable(1); // Enable the motor controller
-			//MOTOR_SetVal(MOTOR_M1, 400, 255);
-		}
-		if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
-			CONTROLLER_Enable(0); // Disable the motor controller
-			//MOTOR_SetVal(MOTOR_M1, 0, 255);
-		}
-		if (SWITCH_GetClick(SWITCH_UP)) {
-			//MOTOR_SetVal(MOTOR_M1, -800, 255);
-		}
-		if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
-			//MOTOR_SetVal(MOTOR_M1, 4200, 255);
-		}
-		// Debug ports
-		USARTL1_RxBufferTask();
-
-		//i = TIM8->CCR1;
-		//sprintf (txt,"%5u", (unsigned int)POWER_vbat);
-		//sprintf (txt,"%5u", (unsigned int)IRperiode);
-		//sprintf (txt,"%5u", (unsigned int)GYRO_GetAngle());
-		//sprintf (txt,"%7u", (unsigned int)MOTOR_GetSpeed(MOTOR_M1));
-		//sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M1));
-		//sprintf (txt,"%8d", (signed int)MOTOR_GetSpeed(MOTOR_M2));
-		sprintf (txt,"%8d", (signed int)TIM3->CNT);
-
-
-		OLED_Print(0, 0, OLED_SIZE_SMALL, txt);
-
-		sprintf (txt,"%8d", 0);
-		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
-
-
-
-		OLED_Display();
-
-
+		VIEW_Task();  // Update the display
+		VIEW_CONTROLLER_Task();  // Control the display
 	}
 
 }
@@ -186,6 +135,7 @@ void Task1ms() {
 	MOTOR_1msTask();
 	CONTROLLER_1msTask();
 	SWITCH_1msTask();
+	GYRO_1msTask();
 }
 
 

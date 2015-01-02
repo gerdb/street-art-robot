@@ -29,7 +29,27 @@
                                               
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "view_controller.h"
 
+/* Types ------------------------------------------------------------------*/
+typedef enum {
+	GYRO_INIT,
+	GYRO_INIT_WAIT,
+	GYRO_INIT_AUTONULL,
+	GYRO_INIT_AUTONULL_WAIT,
+	GYRO_RUN,
+	GYRO_OFFSET_AUTONULL,
+	GYRO_OFFSET_AUTONULL_WAIT,
+	GYRO_OFFSET_WAIT10s,
+	GYRO_OFFSET_SENS_AVG,
+	GYRO_OFFSET_GYRO_OFF_0,
+	GYRO_OFFSET_COLLECT_DATA,
+	GYRO_OFFSET_CALC_OFFSET,
+	GYRO_OFFSET_GYRO_OFF_NEW,
+	GYRO_OFFSET_UPDATE_FLASH,
+	GYRO_OFFSET_WAIT50ms,
+	GYRO_OFFSET_MANUAL
+} en_gyro_state;
 
 /*##################### Gyro on SPI3 ###################################*/
 #define GYRO_SPI                              SPI3
@@ -52,15 +72,31 @@
 
 
 /* Gyro addresses --------------------------------------------------------*/
+#define GYRO_OUT		0x04
 #define GYRO_ANGL_OUT	0x0E
+#define GYRO_OFF		0x14
+#define GYRO_SENS_AVG	0x38
+#define GYRO_GLOB_CMD	0x3E
 #define GYRO_PROD_ID	0x56
 #define GYRO_SERIAL_NUM	0x58
+
+#define GYRO_WRITE		0x80
+#define GYRO_LOW		0x00
+#define GYRO_HIGH		0x01
+
+
 
 
 
 /* Function Prototypes --------------------------------------------------------*/
 void GYRO_Init(void);
 uint16_t GYRO_GetAngle(void);
+void GYRO_1msTask(void);
+void GYRO_Task(void);
+char* GYRO_GetText(en_view_main_menu);
+void GYRO_StartOffset(void);
+void GYRO_StartAutoNull(void);
+void GYRO_ManOffset(int delta);
 
 #endif /* __GYRO_H */
 
