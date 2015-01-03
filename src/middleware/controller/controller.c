@@ -25,24 +25,42 @@
 
 #include "controller.h"
 #include "motor.h"
+#include "gyro.h"
 
 /* local variables ----------------------------------------------------------*/
 int controller_I[2] = {0,0};
 int controller_limit_neg[2] = {0,0};
 int controller_limit_pos[2] = {0,0};
-int controller_pos[2] = {0,0};
-int initialized = 0;
 
+#ifdef CONTROLLER_YAW_PID
+int controller_angle_I = 0;
+#endif
+int controller_angle_limit_neg = 0;
+int controller_angle_limit_pos = 0;
+
+int controller_pos[2] = {0,0};
+int controller_initialized = 0;
+int controller_enable[2] = {0,0};
+int controller_speed_rl[2] = {0,0};
 
 /* local functions ----------------------------------------------------------*/
 
 
 
 /* global variables ----------------------------------------------------------*/
-int controller_enable[2] = {0,0};
-int controller_speed[2] = {10,10};
+
 int controller_ki = 0;
 int controller_kp = 4000;
+
+int controller_angle_kp = 4;
+#ifdef CONTROLLER_YAW_PID
+int controller_angle_ki = 0;
+int controller_angle_kd = 0;
+#endif
+
+int controller_speed = 10;
+int16_t controller_angle = 0;
+int controller_yaw_rate = 0;
 
 /**
  * @brief  Configures the speed controller
@@ -50,7 +68,7 @@ int controller_kp = 4000;
  * @retval None
  */
 void CONTROLLER_Init(void) {
-	initialized = 1;
+	controller_initialized = 1;
 	CONTROLLER_Reset();
 }
 
@@ -86,14 +104,79 @@ void CONTROLLER_1msTask(void) {
 	int diff;
 	int sum;
 	int sensor_pos = 0;
+	int16_t sensor_ang;
 
-	controller_pos[0]+=controller_speed[0];
-	controller_pos[1]-=controller_speed[1];
+#ifdef CONTROLLER_YAW_PID
+	int d;
+	int16_t sensor_ang_old=0;
+#endif
+
 
 	// Wait until controller is initialized
-	if (!initialized)
+	if (!controller_initialized)
 		return;
 
+	// Motor: 6000rpm @12V = 100 rps
+	// 16 controller_pos steps is one sensor step.
+	// Gear ratio is 1:35 and 3:4
+	// Diameter of wheels: 150mm
+	// Wheel distance: 362mm
+	// Sensor steps: 256
+	// The quadrature encoder counts only every 2nd edge of the sensor
+	//
+	// 2048 controller_pos steps are one turn of the motor
+	// 95573,33 controller_pos steps are one turn of the wheel
+	// 230650,311 controller_pos steps are one turn of the robot
+	// 204800 controller_pos steps per second @12V motor voltage
+
+	sensor_ang = GYRO_GetAngle();
+	diff = controller_angle - sensor_ang;
+
+#ifdef CONTROLLER_YAW_PID
+	d= -(sensor_ang-sensor_ang_old);
+
+	sensor_ang_old = sensor_ang;
+
+	// I-part with limitation
+	if ((diff>0 && !controller_angle_limit_pos) ||
+		(diff<0 && !controller_angle_limit_neg))
+		controller_angle_I += controller_angle_ki * diff;
+
+	// P, I and D part
+	sum = controller_angle_I / 16384  + (controller_angle_kp * diff) / 256 + (controller_angle_kd * d) / 256;
+#else
+	// P part
+	sum = (controller_angle_kp * diff) / 256;
+#endif
+
+	// Limit yaw rate
+	if (sum > CONTROLLER_YAW_MAX) {
+		sum = CONTROLLER_YAW_MAX;
+		controller_angle_limit_pos = 1;
+	}
+	else {
+		controller_angle_limit_pos = 0;
+	}
+
+	if (sum < -CONTROLLER_YAW_MAX) {
+		sum = -CONTROLLER_YAW_MAX;
+		controller_angle_limit_neg = 1;
+	}
+	else {
+		controller_angle_limit_neg = 0;
+	}
+
+	controller_yaw_rate = sum;
+
+	// Mix speed and yaw rate
+	controller_speed_rl[0] = controller_speed - controller_yaw_rate;
+	controller_speed_rl[1] = controller_speed + controller_yaw_rate;
+
+	// Generate the position ramp for both motors
+	controller_pos[0]+=controller_speed_rl[0];
+	controller_pos[1]-=controller_speed_rl[1];
+
+	// Speed control of both motors
 	for (i=0; i<2 ; i++) {
 
 		// Get the direction from the encoder values

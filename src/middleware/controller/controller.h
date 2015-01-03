@@ -30,12 +30,16 @@
 
 /* defines ------------------------------------------------------------------*/
 #define CONTROLLER_MAX_DIFF 100
+#define CONTROLLER_YAW_MAX 100
+//#define CONTROLLER_YAW_PID
 
 
 /* global variables ------------------------------------------------------------------*/
-extern int controller_ki;
-extern int controller_kp;
-extern int controller_kd;
+extern int controller_angle_kp;
+#ifdef CONTROLLER_YAW_PID
+extern int controller_angle_ki;
+extern int controller_angle_kd;
+#endif
 
 /* Function Prototypes --------------------------------------------------------*/
 void CONTROLLER_Init(void);

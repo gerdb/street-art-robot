@@ -146,16 +146,21 @@ void GYRO_Task(void) {
 			gyro_state = GYRO_RUN;
 		break;
 
+	case GYRO_OFFSET_AUTONULL_WAIT1:
+		if (gyro_1ms_cnt > 1000)
+			gyro_state = GYRO_OFFSET_AUTONULL;
+		break;
+
 	case GYRO_OFFSET_AUTONULL:
 
 		// Autonull
 		GYRO_SPI_WriteRead(GYRO_GLOB_CMD | GYRO_WRITE, 0x01);
 
 		gyro_1ms_cnt = 0;
-		gyro_state = GYRO_OFFSET_AUTONULL_WAIT;
+		gyro_state = GYRO_OFFSET_AUTONULL_WAIT2;
 		break;
 
-	case GYRO_OFFSET_AUTONULL_WAIT:
+	case GYRO_OFFSET_AUTONULL_WAIT2:
 		if (gyro_1ms_cnt > 1000)
 			gyro_state = GYRO_RUN;
 		break;
@@ -239,7 +244,8 @@ char* GYRO_GetText(en_view_main_menu main_menu) {
 
 	case VIEW_MAINM_GYRO_NULL:
 		if (gyro_state == GYRO_OFFSET_AUTONULL
-				|| gyro_state == GYRO_OFFSET_AUTONULL_WAIT)
+				|| gyro_state == GYRO_OFFSET_AUTONULL_WAIT1
+				|| gyro_state == GYRO_OFFSET_AUTONULL_WAIT2)
 			return "AUTONULL";
 		else
 			return "-->     ";
@@ -307,7 +313,7 @@ void GYRO_StartOffset(void) {
  * @retval none
  */
 void GYRO_StartAutoNull(void) {
-	gyro_state = GYRO_OFFSET_AUTONULL;
+	gyro_state = GYRO_OFFSET_AUTONULL_WAIT1;
 	gyro_1ms_cnt = 0;
 }
 

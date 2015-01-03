@@ -66,7 +66,6 @@
 #include "motor.h"
 #include "rc.h"
 
-extern int mytick;
 /** @addtogroup STM32F4xx_HAL_Examples
  * @{
  */

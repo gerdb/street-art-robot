@@ -101,18 +101,18 @@ void USARTL2_Decode(char c) {
 			}
 			my_printf("\r\n>");
 		}
-		if ((c == 'p') || (c == 'i'))  {
+		if ((c == 'p') || (c == 'i')|| (c == 'd'))  {
 			decodeState = DECODE_DATA;
 			decodePos = 0;
 			decodeData = 0;
 		}
 
-		if (c == 'd') {
-			debug_on = 0;
-		}
-		if (c == 'D') {
-			debug_on = 1;
-		}
+//		if (c == 'd') {
+//			debug_on = 0;
+//		}
+//		if (c == 'D') {
+//			debug_on = 1;
+//		}
 //		if ((c >= '0') && (c <= '9')) {
 //			controller_pos[0] = +(c-'0')*1000/9;
 //			controller_pos[1] = -(c-'0')*1000/9;
@@ -137,11 +137,16 @@ void USARTL2_Decode(char c) {
 			if (decodeData < 65536) {
 				switch (decodeCmd) {
 				case 'p':
-					controller_kp = decodeData;
+					controller_angle_kp = decodeData;
 					break;
+#ifdef CONTROLLER_YAW_PID
 				case 'i':
-					controller_ki = decodeData;
+					controller_angle_ki = decodeData;
 					break;
+				case 'd':
+					controller_angle_kd = decodeData;
+					break;
+#endif
 				}
 			}
 			else {

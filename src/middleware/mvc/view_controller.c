@@ -59,7 +59,8 @@ void VIEW_CONTROLLER_Task(void) {
 			break;
 
 		case VIEW_MAINM_GYRO_NULL:
-			GYRO_StartAutoNull();
+			CONTROLLER_Enable(0); // Disable the motor controller
+			GYRO_StartAutoNull(); // Autonull the gyro
 			break;
 
 
