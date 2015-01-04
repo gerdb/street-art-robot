@@ -24,6 +24,13 @@
 /* Includes -----------------------------------------------------------------*/
 
 #include "irlink.h"
+
+/* global variables ----------------------------------------------------------*/
+int IRLINK_position_x = 0;
+int IRLINK_position_y = 0;
+int IRLINK_intensity = 0;
+en_irlink_StatusTypeDef IRLINK_status = TRACK_INIT;
+
 /* local variables ----------------------------------------------------------*/
 uint16_t irdata[4] = { 0, 0, 0, 0 };
 
@@ -32,7 +39,6 @@ TIM_IC_InitTypeDef sConfigIRlink;
 CRC_HandleTypeDef CrcHandle;
 uint32_t IRuwCRCValue = 0;
 int ir_time;
-volatile uint16_t IRperiode = 0;
 en_irstate ir_state = IR_WAIT_IDLE;
 int data_bit_cnt;
 int data_word_cnt;
@@ -293,16 +299,50 @@ void IRLINK_Received(int bit) {
 			irdata[3] = 0;
 
 			// Calculate the CRC
-			IRuwCRCValue = (uint16_t)HAL_CRC_Calculate(&CrcHandle, (uint32_t *) irdata,
-					4 / 2);
+			IRuwCRCValue = (uint16_t) HAL_CRC_Calculate(&CrcHandle,
+					(uint32_t *) irdata, 4 / 2);
 
 			// CRC was correct
 			if (crcReceived == IRuwCRCValue) {
-				// do something
+
+				// Sender
+				// https://code.google.com/p/stm32-campos/source/browse/trunk/Campos/src/irlink.c
+				// irdata[0] = position_x*10 + position_subx / 100;
+				// irdata[1] = position_y*10 + position_suby / 100;
+				// irdata[2] = (intensity/256)*256 + (int)track_status;
+				// irdata[3] = CRC Checksum;
+
+				IRLINK_position_x = irdata[0];
+				IRLINK_position_y = irdata[1];
+				IRLINK_intensity = (irdata[2] >> 8) & 0x00FF;
+				IRLINK_status = (en_irlink_StatusTypeDef) (irdata[2] & 0x00FF);
 			}
 			ir_state = IR_WAIT_IDLE;
 		}
 	}
 }
 
+/**
+ * @brief  Returns the IR link status as text
+ * @param  None
+ * @retval The text to display
+ */
+char* IRLINK_GetStatusText(void) {
+
+	switch (IRLINK_status) {
+	case TRACK_INIT:
+		return "INIT";
+	case TRACK_SEARCHING:
+		return "SEARCH";
+	case TRACK_LIGHT_FOUND:
+		return "FOUND";
+	case TRACK_CENTER_DETECTED:
+		return "CENTER";
+	case TRACK_LOST:
+		return "LOST";
+	default:
+		return "???";
+	}
+
+}
 

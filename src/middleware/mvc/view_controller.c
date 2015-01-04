@@ -64,6 +64,7 @@ void VIEW_CONTROLLER_Task(void) {
 			break;
 
 		case VIEW_MAINM_GYRO_NULL:
+			LED_SetVal(LED_OFF); // switch off the position light
 			CONTROLLER_Enable(0); // Disable the motor controller
 			GYRO_StartAutoNull(); // Autonull the gyro
 			break;
@@ -105,13 +106,13 @@ void VIEW_CONTROLLER_Task(void) {
 	}
 
 
-	if (SWITCH_GetClick(SWITCH_UP)) {
+	if (SWITCH_GetClick(SWITCH_UP) || RC_GetClick(RC_KEY_RED)) {
 		if (view_main_menu != VIEW_MAINM_GYRO_OFFSET)
 			view_main_menu++;
 		else
 			view_main_menu = VIEW_MAINM_START;
 	}
-	if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetClick(RC_KEY_RED)) {
+	if (SWITCH_GetClick(SWITCH_DOWN)) {
 		if (view_main_menu != VIEW_MAINM_START)
 			view_main_menu--;
 		else

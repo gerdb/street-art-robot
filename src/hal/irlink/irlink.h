@@ -43,9 +43,20 @@ typedef enum {
 	IR_DATA_1B
 } en_irstate;
 
+typedef enum {
+        TRACK_INIT = 0,
+        TRACK_SEARCHING = 1,
+        TRACK_LIGHT_FOUND = 2,
+        TRACK_CENTER_DETECTED = 3,
+        TRACK_LOST = 4
+} en_irlink_StatusTypeDef;
+
 
 /* global variables ------------------------------------------------------------------*/
-extern volatile uint16_t IRperiode;
+extern int IRLINK_position_x;
+extern int IRLINK_position_y;
+extern int IRLINK_intensity;
+extern en_irlink_StatusTypeDef IRLINK_status;
 
 /* defines ------------------------------------------------------------------*/
 
@@ -75,6 +86,6 @@ extern volatile uint16_t IRperiode;
 void IRLINK_Init(void);
 void IRLINK_TimerIRQ(void);
 void IRLINK_Decode(void);
-
+char* IRLINK_GetStatusText(void);
 
 #endif /* __IRLINK_H */

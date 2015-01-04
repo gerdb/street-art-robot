@@ -30,6 +30,7 @@
 #include "oled.h"
 #include "printf.h"
 #include "gyro.h"
+#include "irlink.h"
 
 
 /* local variables ----------------------------------------------------------*/
@@ -72,6 +73,18 @@ void VIEW_Task(void) {
 	case VIEW_MAINM_LED:
 		OLED_Print(0, 0, OLED_SIZE_SMALL, "LED");
 		OLED_Print(0, 1, OLED_SIZE_SMALL, "on/off");
+		break;
+
+	case VIEW_MAINM_IR_POS:
+		OLED_Print(0, 0, OLED_SIZE_SMALL, "IR Position");
+		sprintf(txt, "%5u %5u", IRLINK_position_x, IRLINK_position_y);
+		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
+		break;
+
+	case VIEW_MAINM_IR_STATUS:
+		OLED_Print(0, 0, OLED_SIZE_SMALL, "IR Status");
+		sprintf(txt, "%3u %s", IRLINK_intensity, IRLINK_GetStatusText());
+		OLED_Print(0, 1, OLED_SIZE_SMALL, txt);
 		break;
 
 	case VIEW_MAINM_GYRO:
