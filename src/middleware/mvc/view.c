@@ -69,6 +69,11 @@ void VIEW_Task(void) {
 		OLED_Print(60, 1, OLED_SIZE_SMALL, "Robot");
 		break;
 
+	case VIEW_MAINM_LED:
+		OLED_Print(0, 0, OLED_SIZE_SMALL, "LED");
+		OLED_Print(0, 1, OLED_SIZE_SMALL, "on/off");
+		break;
+
 	case VIEW_MAINM_GYRO:
 		OLED_Print(0, 0, OLED_SIZE_SMALL, "Gyro");
 		OLED_Print(0, 1, OLED_SIZE_SMALL, GYRO_GetText(view_main_menu));

@@ -28,6 +28,7 @@
 #include "rc.h"
 #include "controller.h"
 #include "gyro.h"
+#include "led.h"
 
 /* local variables ----------------------------------------------------------*/
 
@@ -50,12 +51,16 @@ void VIEW_CONTROLLER_Init(void) {
  * @retval None
  */
 void VIEW_CONTROLLER_Task(void) {
-	if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetKey(RC_KEY_GO)) {
+	if (SWITCH_GetClick(SWITCH_LEFT) || RC_GetClick(RC_KEY_GO)) {
 		switch (view_main_menu) {
 
 		case VIEW_MAINM_START:
 			CONTROLLER_Reset();
 			CONTROLLER_Enable(1); // Enable the motor controller
+			break;
+
+		case VIEW_MAINM_LED:
+			LED_SetVal(LED_ON); // switch on the position light
 			break;
 
 		case VIEW_MAINM_GYRO_NULL:
@@ -78,11 +83,15 @@ void VIEW_CONTROLLER_Task(void) {
 
 	}
 
-	if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetKey(RC_KEY_STOP)) {
+	if (SWITCH_GetClick(SWITCH_RIGHT) || RC_GetClick(RC_KEY_STOP)) {
 		switch (view_main_menu) {
 
 		case VIEW_MAINM_START:
 			CONTROLLER_Enable(0); // Disable the motor controller
+			break;
+
+		case VIEW_MAINM_LED:
+			LED_SetVal(LED_OFF); // switch off the position light
 			break;
 
 		case VIEW_MAINM_GYRO_MANOFF:
@@ -102,7 +111,7 @@ void VIEW_CONTROLLER_Task(void) {
 		else
 			view_main_menu = VIEW_MAINM_START;
 	}
-	if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetKey(RC_KEY_RED)) {
+	if (SWITCH_GetClick(SWITCH_DOWN) || RC_GetClick(RC_KEY_RED)) {
 		if (view_main_menu != VIEW_MAINM_START)
 			view_main_menu--;
 		else

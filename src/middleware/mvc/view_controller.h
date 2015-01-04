@@ -31,6 +31,7 @@
 /* Types ------------------------------------------------------------------*/
 typedef enum {
 	VIEW_MAINM_START,
+	VIEW_MAINM_LED,
 	VIEW_MAINM_GYRO,
 	VIEW_MAINM_GYRO_NULL,
 	VIEW_MAINM_GYRO_MANOFF,

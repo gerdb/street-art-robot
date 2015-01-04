@@ -27,9 +27,11 @@
 
 /* local variables ----------------------------------------------------------*/
 UART_HandleTypeDef UartRCHandle;
+int RC_timeout = 0;
 int RC_state = 0;
 int RC_lowBat = 0;
 int RC_key[3] = {0,0,0};
+int RC_click[3]= {0,0,0};
 
 /* local functions ----------------------------------------------------------*/
 uint8_t USART_RC_dummy_buffer[1]; // Just to feed the HAL functions
@@ -75,8 +77,17 @@ void RC_Init(void) {
  * @param  None
  * @retval None
  */
-void RC_Task(void) {
+void RC_1msTask(void) {
+	if (RC_timeout>0) {
+		RC_timeout--;
 
+		// Reset the key state
+		if (RC_timeout == 0) {
+			RC_key[0] = 0;	// Δ
+			RC_key[1] = 0;	// O
+			RC_key[2] = 0;	// RED
+		}
+	}
 }
 
 /**
@@ -115,13 +126,36 @@ void RC_Receive(void) {
 				RC_lowBat = 1;
 			}
 
+			// 500ms Timeout
+			RC_timeout = 500;
+
 			// Get the 3 keys
-			if (c == 'A')
+			if (c == 'A'){
+				if (RC_key[0] == 0)
+					RC_click[0] = 1;
 				RC_key[0] = 1;	// Δ
-			if (c == 'B')
+				RC_key[1] = 0;	// O
+				RC_key[2] = 0;	// RED
+			}
+
+			if (c == 'B'){
+				if (RC_key[1] == 0)
+					RC_click[1] = 1;
 				RC_key[1] = 1;	// O
-			if (c == 'D')
+				RC_key[0] = 0;	// Δ
+				RC_key[2] = 0;	// RED
+
+			}
+
+			if (c == 'D'){
+				if (RC_key[2] == 0)
+					RC_click[2] = 1;
 				RC_key[2] = 1;	// RED
+				RC_key[0] = 0;	// Δ
+				RC_key[1] = 0;	// O
+
+			}
+
 
 			RC_state ++;
 		} else
@@ -152,7 +186,20 @@ int RC_GetKey(int key) {
 
 	// Get the key and reset it
 	retval = RC_key[key];
-	RC_key[key] = 0;
+	return retval;
+}
+
+/**
+ * @brief  Get the edge of a key
+ * @param  key, the index of the key from 0 to 2
+ * @retval 1 if clicked
+ */
+int RC_GetClick(int key) {
+	int retval;
+
+	// Get the key and reset it
+	retval = RC_click[key];
+	RC_click[key] = 0;
 
 	return retval;
 }

@@ -27,6 +27,7 @@
 #include "irlink.h"
 #include "power.h"
 #include "oled.h"
+#include "led.h"
 #include "servo.h"
 #include "motor.h"
 #include "switch.h"
@@ -49,12 +50,12 @@ void SystemClock_Config(void);
  */
 int main(void) {
 
-    //Fatfs object
-    FATFS FatFs;
-    //File object
-    FIL fil;
-    //Free and total space
-    uint32_t total, free;
+//    //Fatfs object
+//    FATFS FatFs;
+//    //File object
+//    FIL fil;
+//    //Free and total space
+//    uint32_t total, free;
 
 	//int i = 12345;
 	// Configure the system clock to 168 Mhz
@@ -68,6 +69,7 @@ int main(void) {
 
 	// Initialize the modules
 	OLED_Init();	// OLED Display
+	LED_Init();		// Position LED
 	SERVO_Init();	// 2 servo motors
 	MOTOR_Init();	// 3 driving motors
 	SWITCH_Init();	// 5 button switches
@@ -135,6 +137,7 @@ void Task1ms() {
 	MOTOR_1msTask();
 	CONTROLLER_1msTask();
 	SWITCH_1msTask();
+	RC_1msTask();
 	GYRO_1msTask();
 }
 

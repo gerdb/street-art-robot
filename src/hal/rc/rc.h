@@ -51,9 +51,10 @@
 
 /* Function Prototypes --------------------------------------------------------*/
 void RC_Init(void);
-void RC_Task(void);
+void RC_1msTask(void);
 void RC_USART_IRQHandler(void);
 void RC_Receive(void);
 int RC_GetKey(int key);
+int RC_GetClick(int key);
 
 #endif // __RC_H
